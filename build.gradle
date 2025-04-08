@@ -27,6 +27,8 @@ dependencies {
 
     // DB
     runtimeOnly 'com.h2database:h2' // 개발용
+    runtimeOnly 'com.mysql:mysql-connector-j'
+
     // runtimeOnly 'com.mysql:mysql-connector-j' // 실사용 시
 
     // Test
