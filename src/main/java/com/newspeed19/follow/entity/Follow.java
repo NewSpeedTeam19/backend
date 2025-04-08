@@ -19,6 +19,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 /**
  * 팔로우 관계를 나타내는 엔티티
@@ -43,10 +44,12 @@ public class Follow {
 	@JoinColumn(name = "following_id", nullable = false)
 	private User following;
 
+	@Setter
 	@Enumerated(EnumType.STRING)
 	@Column(nullable = false)
 	private FollowStatus status;
 
 	@Column(name = "created_at", nullable = false)
 	private LocalDateTime createdAt;
+
 }
