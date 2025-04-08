@@ -1,4 +1,4 @@
-package com.newspeed19.common;
+package com.newspeed19.user.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
