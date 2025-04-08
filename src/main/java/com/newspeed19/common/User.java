@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "users") // user는 예약어라서 복수형 추천
+@Table(name = "users")
 @Getter
 @Setter
 @NoArgsConstructor
