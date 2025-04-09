@@ -3,6 +3,10 @@ package com.newspeed19.user.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+/**
+ * User Entity
+ */
+
 @Entity
 @Table(name = "users")
 @Getter
@@ -52,6 +56,16 @@ public class User {
 		this.followingCount = followingCount;
 		this.isDeleted = isDeleted;
 	}
+
+	public User(String name, String email, String password) {
+		this.name = name;
+		this.email = email;
+		this.password = password;
+		this.followCount = 0L;
+		this.followingCount = 0L;
+		this.isDeleted = false;
+	}
+
 
 	public void updateProfile(String name, String introduction, String image) {
 		if (name != null) this.name = name;
