@@ -21,12 +21,16 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthService {
 	private final UserRepository repository;
-	private final JwtTokenService tokenService;
+	private final JwtProvider jwtProvider;
 
 	@Transactional
 	public void signup(SignupRequestDto dto) {
 		User user = new User(dto.getName(), dto.getEmail(), dto.getPassword());
 		repository.save(user);
+	}
+
+	public boolean checkName(String name) {
+		return !repository.existsByName(name);
 	}
 
 	public String login(LoginRequestDto dto) {
@@ -35,7 +39,14 @@ public class AuthService {
 			throw new RuntimeException("비번이 틀렸어 로그인 실패!");
 		}
 
-		String accessToken = tokenService.createToken(user.getId(), user.getName(), 10, "accessToken");
+		String accessToken = jwtProvider.createToken(user.getId(), "accessToken");
 		return accessToken;
+	}
+
+	public void reissue(String access, String refresh) {
+		String token = jwtProvider.getToken(refresh);
+		jwtProvider.validateToken(token);
+		String id = jwtProvider.getUserId(token);
+		// repository.refresh
 	}
 }
