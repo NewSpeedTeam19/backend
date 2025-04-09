@@ -8,8 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
-import com.newspeed19.comment.dto.request.CommentCreateRequestDto;
-import com.newspeed19.comment.dto.request.CommentUpdateRequestDto;
+import com.newspeed19.comment.dto.request.CommentRequestDto;
 import com.newspeed19.comment.dto.response.CommentResponseDto;
 import com.newspeed19.comment.entity.Comment;
 import com.newspeed19.comment.repository.CommentRepository;
@@ -29,7 +28,7 @@ public class CommentService {
 	private final FeedRepository feedRepository;
 
 	@Transactional
-	public CommentResponseDto create(Long userId, Long feedId, @Valid CommentCreateRequestDto requestDto) {
+	public CommentResponseDto create(Long userId, Long feedId, @Valid CommentRequestDto requestDto) {
 		User findUser = userRepository.findByIdOrElseThrow(userId);
 		Feed findFeed = feedRepository.findByIdOrElseThrow(feedId);
 
@@ -43,6 +42,7 @@ public class CommentService {
 		return new CommentResponseDto(comment);
 	}
 
+	@Transactional(readOnly = true)
 	public List<CommentResponseDto> findAll(Long feedId) {
 		Feed findFeed = feedRepository.findByIdOrElseThrow(feedId);
 		List<Comment> comments = commentRepository.findByFeedIdOrElseThrow(findFeed);
@@ -53,7 +53,7 @@ public class CommentService {
 	}
 
 	@Transactional
-	public void update(Long id, Long userId, @Valid CommentUpdateRequestDto requestDto) {
+	public void update(Long id, Long userId, @Valid CommentRequestDto requestDto) {
 		Comment comment = commentRepository.findByIdOrElseThrow(id);
 		if (!comment.getUser().getId().equals(userId)) {
 			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "작성자만 접근 가능합니다.");
