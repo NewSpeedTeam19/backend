@@ -4,9 +4,9 @@ import java.io.IOException;
 
 import org.springframework.util.PatternMatchUtils;
 
-import com.auth0.jwt.JWT;
-import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTVerificationException;
+import com.newspeed19.auth.repository.JwtBlackList;
+import com.newspeed19.auth.service.JwtProvider;
 
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
@@ -23,12 +23,11 @@ import jakarta.servlet.http.HttpServletResponse;
  * @date           : 4/8/25
  * @description    :
  */
-
 public class AuthFilter implements Filter {
-	private final String secretKey;
+	private JwtProvider jwtProvider;
 
-	public AuthFilter(String secretKey) {
-		this.secretKey = secretKey;
+	public AuthFilter(JwtProvider jwtProvider) {
+		this.jwtProvider = jwtProvider;
 	}
 
 	private final String[] WHITE_LIST = {"/api/auth/signup", "/api/auth/namecheck", "/api/auth/login", "/api/feed",
@@ -43,11 +42,13 @@ public class AuthFilter implements Filter {
 		String requestUri = request.getRequestURI();
 		HttpServletResponse response = (HttpServletResponse)servletResponse;
 
-		if (!isWHITE_LIST(requestUri)) {
+		if (!isWhiteList(requestUri)) {
 			try {
-				String token = request.getHeader("Authorization").substring(7);
-				JWT.require(Algorithm.HMAC512(secretKey))
-					.build().verify(token);
+				String token = jwtProvider.getToken(request.getHeader("Authorization"));
+				if (isBlacklisted(token)) {
+					throw new RuntimeException("사용 중지된 토큰입니다.");
+				}
+				jwtProvider.validateToken(token);
 			} catch (JWTVerificationException e) {
 				throw new RuntimeException("실패~");
 			}
@@ -55,7 +56,17 @@ public class AuthFilter implements Filter {
 		filterChain.doFilter(servletRequest, response);
 	}
 
-	public boolean isWHITE_LIST(String uri) {
+	public boolean isBlacklisted(String token) {
+		Long expiry = JwtBlackList.list.get(token);
+		if (expiry == null)
+			return false;
+		return true;
+	}
+
+	private boolean isWhiteList(String uri) {
 		return PatternMatchUtils.simpleMatch(WHITE_LIST, uri);
 	}
 }
+
+// access token, refreshtoken 둘 다 확인했을 때 통과할 시
+// redis
