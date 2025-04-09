@@ -30,6 +30,11 @@ public class FollowController {
 
 	private final FollowService followService;
 
+	private long getUserIdFromToken(String authorization) {
+		String token = authorization.replace("Bearer ", "");
+		DecodedJWT
+	}
+
 	@PostMapping("/follow")
 	public FollowResponseDto sendFollowRequest(
 		@AuthenticationPrincipal
