@@ -7,6 +7,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class NewSpeed19Application {
 
     public static void main(String[] args) {
+        System.out.println("test");
+
         SpringApplication.run(NewSpeed19Application.class, args);
     }
 
