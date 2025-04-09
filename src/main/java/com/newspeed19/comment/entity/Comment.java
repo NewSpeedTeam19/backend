@@ -3,7 +3,15 @@ package com.newspeed19.comment.entity;
 import com.newspeed19.common.entity.BaseEntity;
 import com.newspeed19.feed.entity.Feed;
 import com.newspeed19.user.entity.User;
-import jakarta.persistence.*;
+
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,26 +21,32 @@ import lombok.NoArgsConstructor;
 @Entity
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
 @Table(name = "comments")
 public class Comment extends BaseEntity {
 
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
 
-    private String content;
+	private String content;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "feed_id", nullable = false)
-    private Feed feed;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "feed_id", nullable = false)
+	private Feed feed;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "user_id", nullable = false)
+	private User user;
 
-    public void update(String content){
-        this.content = content;
-    }
+	@Builder
+	public Comment(String content, Feed feed, User user) {
+		this.content = content;
+		this.feed = feed;
+		this.user = user;
+	}
+
+	public void update(String content) {
+		this.content = content;
+	}
 
 }
