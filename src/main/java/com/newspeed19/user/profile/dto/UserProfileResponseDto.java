@@ -6,9 +6,9 @@ import lombok.Getter;
 @Getter
 @Builder
 public class UserProfileResponseDto {
-	private Long id;
-	private String name;
-	private String introduction;
-	private String image;
-	private String email;
+	private final Long id;
+	private final String name;
+	private final String introduction;
+	private final String image;
+	private final String email;
 }

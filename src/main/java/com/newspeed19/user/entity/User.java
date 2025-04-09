@@ -6,10 +6,7 @@ import lombok.*;
 @Entity
 @Table(name = "users")
 @Getter
-@Setter
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class User {
 
 	@Id
@@ -41,4 +38,18 @@ public class User {
 
 	@Column(name = "is_deleted")
 	private Boolean isDeleted = false;
+
+	@Builder
+	public User(String name, String email, String introduction, String image, Integer age, String password,
+		Long followCount, Long followingCount, Boolean isDeleted) {
+		this.name = name;
+		this.email = email;
+		this.introduction = introduction;
+		this.image = image;
+		this.age = age;
+		this.password = password;
+		this.followCount = followCount;
+		this.followingCount = followingCount;
+		this.isDeleted = isDeleted;
+	}
 }
