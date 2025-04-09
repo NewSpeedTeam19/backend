@@ -78,7 +78,6 @@ public class CommentService {
 	public Page<CommentPageResponseDto> findAllPage(Long feedId, int page, int size) {
 		int adjustedPage = (page > 0) ? page - 1 : 0;
 		PageRequest pageable = PageRequest.of(adjustedPage, size, Sort.by("updatedAt").descending());
-		// public static PageRequest of(int pageNumber, int pageSize, Sort sort)
 
 		Feed findFeed = feedRepository.findByIdOrElseThrow(feedId);
 		Page<Comment> commentPage = commentRepository.findAllByFeedIdOrElseThrow(findFeed, pageable);
