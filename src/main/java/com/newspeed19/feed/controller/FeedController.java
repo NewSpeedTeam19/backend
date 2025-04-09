@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.newspeed19.feed.dto.request.FeedRequestDto;
@@ -32,14 +33,16 @@ public class FeedController {
 
 	/**
 	 * [Controller] 전체 피드를 조회하는 메서드
-	 * @param pageable 페이징 객체
+	 * @param page 페이지 번호
+	 * @param size 페이지 사이즈
 	 * @return 페이징 피드정보가 포함된 응답객체를 반환
 	 */
 	@GetMapping
-	public ResponseEntity<ApiResponseDto<PagedFeedResponseDto>> findAll(
-		@PageableDefault(sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable
+	public ResponseEntity<ApiResponseDto<FeedPageResponseDto>> findAll(
+		@RequestParam(defaultValue = "1") int page,
+		@RequestParam(defaultValue = "10") int size
 	) {
-		PagedFeedResponseDto responseDto = feedService.findAllFeed(pageable);
+		FeedPageResponseDto responseDto = feedService.findAllFeed(page, size);
 
 		ApiResponseDto<PagedFeedResponseDto> apiResponseDto = ApiResponseDto.<PagedFeedResponseDto>builder()
 			.success(true)

@@ -2,6 +2,10 @@ package com.newspeed19.feed.dto.response;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+
+import com.fasterxml.jackson.annotation.JsonPropertyOrder;
+
 import lombok.Builder;
 import lombok.Getter;
 
@@ -10,7 +14,8 @@ import lombok.Getter;
  */
 @Getter
 @Builder
-public class PagedFeedResponseDto {
-	private final PageResponseDto pages;
+@JsonPropertyOrder({"feeds", "pages"})
+public class FeedPageResponseDto {
 	private final List<FeedResponseDto> feeds;
+	private final Page<FeedResponseDto> pages;
 }

@@ -29,12 +29,18 @@ public class FeedService {
 
 	/**
 	 * [Service] 전체 피드를 조회하는 메서드
-	 * @param pageable 페이징 객체
+	 * @param page 페이지 번호
+	 * @param size 페이지 크기
 	 * @return 페이징된 피드 응답객체를 반환
 	 */
 	@Transactional(readOnly = true)
-	public PagedFeedResponseDto findAllFeed(Pageable pageable) {
-		Page<FeedResponseDto> pagedFeedResponseDto = feedRepository.findAll(pageable)
+	public FeedPageResponseDto findAllFeed(int page, int size) {
+		// 페이징 객체 생성
+		int adjustedPage = (page > 0) ? page - 1 : 0;
+		PageRequest pageable = PageRequest.of(adjustedPage, size, Sort.by("updatedAt").descending());
+
+		// 페이징된 피드목록 응답객체 생성
+		Page<FeedResponseDto> feedPageResponseDto = feedRepository.findAll(pageable)
 			.map(feed ->
 				// FIXME: 댓글 불러오기 로직 추가 예정
 				FeedResponseDto.builder()
@@ -46,11 +52,10 @@ public class FeedService {
 					.build()
 			);
 		// 응답 객체 생성
-		List<FeedResponseDto> feeds = pagedFeedResponseDto.getContent();
-		PageResponseDto pages = PageResponseDto.from(pagedFeedResponseDto);
+		List<FeedResponseDto> feeds = feedPageResponseDto.getContent();
 
-		return PagedFeedResponseDto.builder()
-			.pages(pages)
+		return FeedPageResponseDto.builder()
+			.pages(feedPageResponseDto)
 			.feeds(feeds)
 			.build();
 	}
