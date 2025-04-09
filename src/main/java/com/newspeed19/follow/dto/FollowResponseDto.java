@@ -2,20 +2,22 @@ package com.newspeed19.follow.dto;
 
 import com.newspeed19.follow.entity.FollowStatus;
 
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 /**
  * 팔로우 요청 응답 DTO
  */
 @Getter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class FollowResponseDto {
-	private String message;
-	private FollowStatus status;
-	private Long targetUserId;
+	private final String message;
+	private final FollowStatus status;
+	private final Long targetUserId;
+
+	@Builder
+	public FollowResponseDto(String message, FollowStatus status, Long targetUserId) {
+		this.message = message;
+		this.status = status;
+		this.targetUserId = targetUserId;
+	}
 }

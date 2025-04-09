@@ -15,7 +15,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -28,8 +27,6 @@ import lombok.Setter;
 @Table(name = "follows")
 @Getter
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class Follow {
 
 	@Id
@@ -52,4 +49,11 @@ public class Follow {
 	@Column(name = "created_at", nullable = false)
 	private LocalDateTime createdAt;
 
+	@Builder
+	public Follow(User follower, User following, FollowStatus status, LocalDateTime createdAt) {
+		this.follower = follower;
+		this.following = following;
+		this.status = status;
+		this.createdAt = createdAt;
+	}
 }

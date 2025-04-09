@@ -8,8 +8,8 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 import com.newspeed19.follow.dto.FollowResponseDto;
-import com.newspeed19.follow.dto.FollowUserDto;
-import com.newspeed19.follow.dto.ReceivedFollowRequestDto;
+import com.newspeed19.follow.dto.FollowUserResponseDto;
+import com.newspeed19.follow.dto.ReceivedFollowResponseDto;
 import com.newspeed19.follow.entity.Follow;
 import com.newspeed19.follow.entity.FollowStatus;
 import com.newspeed19.follow.exception.FollowErrorCode;
@@ -165,7 +165,7 @@ public class FollowServiceImpl implements FollowService {
 	 * @return 받은 팔로우 요청 목록
 	 */
 	@Override
-	public List<ReceivedFollowRequestDto> getReceivedFollowRequests(Long currentUserId, int page, int size) {
+	public List<ReceivedFollowResponseDto> getReceivedFollowRequests(Long currentUserId, int page, int size) {
 		User currentUser = userRepository.getByIdOrThrow(currentUserId);
 
 		Page<Follow> receivedRequests = followRepository.findByFollowerAndStatus(
@@ -177,7 +177,7 @@ public class FollowServiceImpl implements FollowService {
 		return receivedRequests.stream()
 			.map(follow -> {
 				User sender = follow.getFollower();
-				return ReceivedFollowRequestDto.builder()
+				return ReceivedFollowResponseDto.builder()
 					.userId(sender.getId())
 					.username(sender.getName())
 					.profileImageUrl(sender.getImage())
@@ -198,7 +198,7 @@ public class FollowServiceImpl implements FollowService {
 	 * @return 팔로잉한 사용자 목록
 	 */
 	@Override
-	public List<FollowUserDto> getFollowingList(Long userId, int page, int size) {
+	public List<FollowUserResponseDto> getFollowingList(Long userId, int page, int size) {
 		User follower = userRepository.getByIdOrThrow(userId);
 
 		Page<Follow> followings = followRepository.findByFollowerAndStatus(
@@ -210,7 +210,7 @@ public class FollowServiceImpl implements FollowService {
 		return followings.stream()
 			.map(follow -> {
 				User following = follow.getFollowing();
-				return FollowUserDto.builder()
+				return FollowUserResponseDto.builder()
 					.userId(following.getId())
 					.username(following.getName())
 					.profileImageUrl(follower.getImage())
@@ -230,7 +230,7 @@ public class FollowServiceImpl implements FollowService {
 	 * @return 나를 팔로우한 사용자 목록
 	 */
 	@Override
-	public List<FollowUserDto> getFollowerList(Long userId, int page, int size) {
+	public List<FollowUserResponseDto> getFollowerList(Long userId, int page, int size) {
 		User following = userRepository.getByIdOrThrow(userId);
 
 		Page<Follow> followers = followRepository.findByFollowingAndStatus(
@@ -242,7 +242,7 @@ public class FollowServiceImpl implements FollowService {
 		return followers.stream()
 			.map(follow -> {
 				User follower = follow.getFollower();
-				return FollowUserDto.builder()
+				return FollowUserResponseDto.builder()
 					.userId(follower.getId())
 					.username(follower.getName())
 					.profileImageUrl(follower.getImage())

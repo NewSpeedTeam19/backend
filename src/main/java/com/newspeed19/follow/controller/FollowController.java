@@ -14,8 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.newspeed19.follow.dto.FollowRequestDto;
 import com.newspeed19.follow.dto.FollowResponseDto;
-import com.newspeed19.follow.dto.FollowUserDto;
-import com.newspeed19.follow.dto.ReceivedFollowRequestDto;
+import com.newspeed19.follow.dto.FollowUserResponseDto;
+import com.newspeed19.follow.dto.ReceivedFollowResponseDto;
 import com.newspeed19.follow.service.FollowService;
 
 import lombok.RequiredArgsConstructor;
@@ -63,7 +63,7 @@ public class FollowController {
 	}
 
 	@GetMapping("/follow/received")
-	public List<ReceivedFollowRequestDto> getReceivedFollowRequests(
+	public List<ReceivedFollowResponseDto> getReceivedFollowRequests(
 		@AuthenticationPrincipal
 		@RequestParam(defaultValue = "0") int page,
 		@RequestParam(defaultValue = "10") int size
@@ -72,7 +72,7 @@ public class FollowController {
 	}
 
 	@GetMapping("/profile/{userId}/following")
-	public List<FollowUserDto> getFollowingList(
+	public List<FollowUserResponseDto> getFollowingList(
 		@PathVariable Long userId,
 		@RequestParam(defaultValue = "0") int page,
 		@RequestParam(defaultValue = "10") int size
@@ -81,7 +81,7 @@ public class FollowController {
 	}
 
 	@GetMapping("/profile/{userId}/follower")
-	public List<FollowUserDto> getFollowerList(
+	public List<FollowUserResponseDto> getFollowerList(
 		@PathVariable Long userId,
 		@RequestParam(defaultValue = "0") int page,
 		@RequestParam(defaultValue = "10") int size
