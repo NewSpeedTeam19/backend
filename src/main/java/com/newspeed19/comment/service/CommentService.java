@@ -17,6 +17,8 @@ import com.newspeed19.comment.dto.response.CommentResponseDto;
 import com.newspeed19.comment.entity.Comment;
 import com.newspeed19.comment.repository.CommentRepository;
 import com.newspeed19.feed.entity.Feed;
+import com.newspeed19.feed.exception.CustomException;
+import com.newspeed19.feed.exception.ExceptionCode;
 import com.newspeed19.feed.repository.FeedRepository;
 import com.newspeed19.user.entity.User;
 import com.newspeed19.user.repository.UserRepository;
@@ -33,8 +35,12 @@ public class CommentService {
 
 	@Transactional
 	public CommentResponseDto create(Long userId, Long feedId, @Valid CommentRequestDto requestDto) {
-		User findUser = userRepository.findByIdOrElseThrow(userId);
-		Feed findFeed = feedRepository.findByIdOrElseThrow(feedId);
+		User findUser = userRepository.getByIdOrThrow(userId);
+		Feed findFeed = feedRepository.findById(feedId)
+			.orElseThrow(() -> CustomException
+				.builder()
+				.exceptionCode(ExceptionCode.FEED_NOT_FOUND)
+				.build());
 
 		Comment comment = Comment.builder()
 			.content(requestDto.getContent())
@@ -48,7 +54,11 @@ public class CommentService {
 
 	@Transactional(readOnly = true)
 	public List<CommentResponseDto> findAll(Long feedId) {
-		Feed findFeed = feedRepository.findByIdOrElseThrow(feedId);
+		Feed findFeed = feedRepository.findById(feedId)
+			.orElseThrow(() -> CustomException
+				.builder()
+				.exceptionCode(ExceptionCode.FEED_NOT_FOUND)
+				.build());
 		List<Comment> comments = commentRepository.findByFeedIdOrElseThrow(findFeed);
 		return comments.stream()
 			.map(CommentResponseDto::toDto)
@@ -79,7 +89,11 @@ public class CommentService {
 		int adjustedPage = (page > 0) ? page - 1 : 0;
 		PageRequest pageable = PageRequest.of(adjustedPage, size, Sort.by("updatedAt").descending());
 
-		Feed findFeed = feedRepository.findByIdOrElseThrow(feedId);
+		Feed findFeed = feedRepository.findById(feedId)
+			.orElseThrow(() -> CustomException
+				.builder()
+				.exceptionCode(ExceptionCode.FEED_NOT_FOUND)
+				.build());
 		Page<Comment> commentPage = commentRepository.findAllByFeedIdOrElseThrow(findFeed, pageable);
 
 		return commentPage.map(comment -> CommentPageResponseDto.builder()
