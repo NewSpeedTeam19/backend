@@ -15,6 +15,5 @@ import com.newspeed19.auth.entity.User;
  */
 public interface UserRepository extends JpaRepository<User, Long> {
 	Optional<User> findByEmail(String email);
-
 	boolean existsByName(String name);
 }

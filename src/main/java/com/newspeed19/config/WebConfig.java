@@ -30,5 +30,4 @@ public class WebConfig {
 		filterRegistrationBean.addUrlPatterns("/*");
 		return filterRegistrationBean;
 	}
-
 }

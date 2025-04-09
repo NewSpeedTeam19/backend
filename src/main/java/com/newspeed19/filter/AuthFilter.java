@@ -55,7 +55,7 @@ public class AuthFilter implements Filter {
 		}
 		filterChain.doFilter(servletRequest, response);
 	}
-
+  
 	public boolean isBlacklisted(String token) {
 		Long expiry = JwtBlackList.list.get(token);
 		if (expiry == null)
@@ -67,6 +67,3 @@ public class AuthFilter implements Filter {
 		return PatternMatchUtils.simpleMatch(WHITE_LIST, uri);
 	}
 }
-
-// access token, refreshtoken 둘 다 확인했을 때 통과할 시
-// redis
