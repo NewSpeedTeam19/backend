@@ -3,13 +3,14 @@ package com.newspeed19.user.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+/**
+ * User Entity
+ */
+
 @Entity
 @Table(name = "users")
 @Getter
-@Setter
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class User {
 
 	@Id
@@ -41,4 +42,35 @@ public class User {
 
 	@Column(name = "is_deleted")
 	private Boolean isDeleted = false;
+
+	@Builder
+	public User(String name, String email, String introduction, String image, Integer age, String password,
+		Long followCount, Long followingCount, Boolean isDeleted) {
+		this.name = name;
+		this.email = email;
+		this.introduction = introduction;
+		this.image = image;
+		this.age = age;
+		this.password = password;
+		this.followCount = followCount;
+		this.followingCount = followingCount;
+		this.isDeleted = isDeleted;
+	}
+
+	public User(String name, String email, String password) {
+		this.name = name;
+		this.email = email;
+		this.password = password;
+		this.followCount = 0L;
+		this.followingCount = 0L;
+		this.isDeleted = false;
+	}
+
+
+	public void updateProfile(String name, String introduction, String image) {
+		if (name != null) this.name = name;
+		if (introduction != null) this.introduction = introduction;
+		if (image != null) this.image = image;
+	}
+
 }

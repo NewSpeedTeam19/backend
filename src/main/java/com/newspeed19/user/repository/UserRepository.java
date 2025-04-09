@@ -1,5 +1,7 @@
 package com.newspeed19.user.repository;
 
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.newspeed19.user.entity.User;
@@ -17,4 +19,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 		return findById(id)
 			.orElseThrow(() -> new IllegalArgumentException("사용자 정보를 찾을 수 없습니다. [id =" + id + "]"));
 	}
+	Optional<User> findByEmail(String email);
+
 }
