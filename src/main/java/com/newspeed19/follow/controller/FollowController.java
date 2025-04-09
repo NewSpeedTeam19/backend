@@ -8,14 +8,17 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.auth0.jwt.JWT;
+import com.auth0.jwt.interfaces.DecodedJWT;
 import com.newspeed19.follow.dto.FollowRequestDto;
 import com.newspeed19.follow.dto.FollowResponseDto;
-import com.newspeed19.follow.dto.FollowUserDto;
-import com.newspeed19.follow.dto.ReceivedFollowRequestDto;
+import com.newspeed19.follow.dto.FollowUserResponseDto;
+import com.newspeed19.follow.dto.ReceivedFollowResponseDto;
 import com.newspeed19.follow.service.FollowService;
 
 import lombok.RequiredArgsConstructor;
@@ -30,49 +33,60 @@ public class FollowController {
 
 	private final FollowService followService;
 
+	private long getUserIdFromToken(String authorization) {
+		String token = authorization.replace("Bearer ", "");
+		DecodedJWT decodedJWT = JWT.decode(token);
+		return Long.valueOf(decodedJWT.getSubject());
+	}
+
 	@PostMapping("/follow")
 	public FollowResponseDto sendFollowRequest(
-		@AuthenticationPrincipal
+		@RequestHeader("Authorization") String authorization,
 		@RequestBody FollowRequestDto request
 	) {
-		return followService.sendFollowRequest();
+		Long userId = getUserIdFromToken(authorization);
+		return followService.sendFollowRequest(userId, request.getTargetUserId());
 	}
 
 	@DeleteMapping("/follow")
 	public FollowResponseDto cancelFollowRequest(
-		@AuthenticationPrincipal
+		@RequestHeader("Authorization") String authorization,
 		@RequestBody FollowRequestDto request
 	) {
-		return followService.cancelFollowRequest();
+		Long userId = getUserIdFromToken(authorization);
+		return followService.cancelFollowRequest(userId, request.getTargetUserId());
 	}
 
 	@PatchMapping("/follow/accept")
 	public FollowResponseDto acceptFollowRequest(
-		@AuthenticationPrincipal
+		@RequestHeader("Authorization") String authorization,
 		@RequestBody FollowRequestDto request
 	) {
-		return followService.acceptFollowRequest();
+		Long userId = getUserIdFromToken(authorization);
+		return followService.acceptFollowRequest(userId, request.getTargetUserId());
 	}
 
 	@PatchMapping("/follow/reject")
 	public FollowResponseDto rejectFollowRequest(
-		@AuthenticationPrincipal
+		@RequestHeader("Authorization") String authorization,
 		@RequestBody FollowRequestDto request
 	) {
-		return followService.rejectFollowRequest();
+		Long userId = getUserIdFromToken(authorization);
+		return followService.rejectFollowRequest(userId, request.getTargetUserId());
 	}
 
 	@GetMapping("/follow/received")
-	public List<ReceivedFollowRequestDto> getReceivedFollowRequests(
-		@AuthenticationPrincipal
+	public List<ReceivedFollowResponseDto> getReceivedFollowRequests(
+		@RequestHeader("Authorization") String authorization,
 		@RequestParam(defaultValue = "0") int page,
 		@RequestParam(defaultValue = "10") int size
 	) {
-		return followService.getReceivedFollowRequests();
+		Long userId = getUserIdFromToken(authorization);
+		return followService.getReceivedFollowRequests(userId, page, size);
 	}
 
 	@GetMapping("/profile/{userId}/following")
-	public List<FollowUserDto> getFollowingList(
+	public List<FollowUserResponseDto> getFollowingList(
 		@PathVariable Long userId,
 		@RequestParam(defaultValue = "0") int page,
 		@RequestParam(defaultValue = "10") int size
@@ -81,7 +95,7 @@ public class FollowController {
 	}
 
 	@GetMapping("/profile/{userId}/follower")
-	public List<FollowUserDto> getFollowerList(
+	public List<FollowUserResponseDto> getFollowerList(
 		@PathVariable Long userId,
 		@RequestParam(defaultValue = "0") int page,
 		@RequestParam(defaultValue = "10") int size
