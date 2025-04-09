@@ -15,6 +15,7 @@ repositories {
 
 dependencies {
     // Spring Boot
+    implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
@@ -31,6 +32,9 @@ dependencies {
 
     // runtimeOnly 'com.mysql:mysql-connector-j' // 실사용 시
 
+    // 인증
+    implementation 'com.auth0:java-jwt:3.18.1'
+    
     // Test
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
 }
