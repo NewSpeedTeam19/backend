@@ -4,7 +4,6 @@ import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -13,10 +12,11 @@ import org.springframework.web.server.ResponseStatusException;
 
 import com.newspeed19.feed.dto.request.FeedRequestDto;
 import com.newspeed19.feed.dto.response.FeedDetailResponseDto;
+import com.newspeed19.feed.dto.response.FeedPageResponseDto;
 import com.newspeed19.feed.dto.response.FeedResponseDto;
-import com.newspeed19.feed.dto.response.PageResponseDto;
-import com.newspeed19.feed.dto.response.PagedFeedResponseDto;
 import com.newspeed19.feed.entity.Feed;
+import com.newspeed19.feed.exception.CustomException;
+import com.newspeed19.feed.exception.ExceptionCode;
 import com.newspeed19.feed.repository.FeedRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -68,7 +68,10 @@ public class FeedService {
 	@Transactional(readOnly = true)
 	public FeedDetailResponseDto findFeedById(Long id) {
 		Feed feed = feedRepository.findById(id)
-			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 게시글입니다."));
+			.orElseThrow(() -> CustomException
+				.builder()
+				.exceptionCode(ExceptionCode.FEED_NOT_FOUND)
+				.build());
 
 		return FeedDetailResponseDto.builder()
 			.id(feed.getId())
@@ -143,26 +146,13 @@ public class FeedService {
 	 * @return 업데이트된 페이징 피드 응답객체를 반환
 	 */
 	@Transactional
-	public PagedFeedResponseDto deleteFeed(Long id, String password) {
+	public FeedPageResponseDto deleteFeed(Long id, String password) {
 		// FIXME: 비밀번호 검증 로직 필요
 		// FIXME: 로그인 유저 권한여부 로직 필요
-
 		Feed feed = feedRepository.findById(id)
 			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 게시글입니다."));
 
 		feedRepository.delete(feed);
-
-		return this.findAllFeed(getDefaultPageable());
-	}
-
-	/**
-	 * 🚀 기본 페이징 객체를 반환하는 메서드 (생성일 내림차순)
-	 * @return 페이징 객체를 반환
-	 */
-	private Pageable getDefaultPageable() {
-		return PageRequest.of(
-			0,
-			10,
-			Sort.by(Sort.Direction.DESC, "createdAt"));
+		return this.findAllFeed(0, 10);
 	}
 }
