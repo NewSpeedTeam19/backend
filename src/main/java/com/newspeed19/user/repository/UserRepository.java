@@ -19,6 +19,8 @@ public interface UserRepository extends JpaRepository<User, Long> {
 		return findById(id)
 			.orElseThrow(() -> new IllegalArgumentException("사용자 정보를 찾을 수 없습니다. [id =" + id + "]"));
 	}
+
 	Optional<User> findByEmail(String email);
 
+	boolean existsByName(String name);
 }

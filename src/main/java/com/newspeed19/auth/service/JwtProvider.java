@@ -57,7 +57,6 @@ public class JwtProvider {
 			throw new RuntimeException("validate실패");
 		}
 		return true;
-
 	}
 
 	public String getToken(String authHeader) {
@@ -71,7 +70,6 @@ public class JwtProvider {
 			.build()
 			.parseClaimsJws(token)
 			.getBody();
-
 		Date expiration = claims.getExpiration();
 		return expiration.getTime();
 	}
