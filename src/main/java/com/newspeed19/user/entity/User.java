@@ -52,4 +52,11 @@ public class User {
 		this.followingCount = followingCount;
 		this.isDeleted = isDeleted;
 	}
+
+	public void updateProfile(String name, String introduction, String image) {
+		if (name != null) this.name = name;
+		if (introduction != null) this.introduction = introduction;
+		if (image != null) this.image = image;
+	}
+
 }

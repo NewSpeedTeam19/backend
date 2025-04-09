@@ -30,9 +30,11 @@ public class ProfileServiceImpl implements ProfileService {
 	@Override
 	@Transactional
 	public void updateMyProfile(User user, UserProfileUpdateRequestDto request) {
-		if (request.getName() != null) user.setName(request.getName());
-		if (request.getIntroduction() != null) user.setIntroduction(request.getIntroduction());
-		if (request.getImage() != null) user.setImage(request.getImage());
+		user.updateProfile(
+			request.getName(),
+			request.getIntroduction(),
+			request.getImage()
+		);
 	}
 
 	// 다른 사람 프로필 조회
