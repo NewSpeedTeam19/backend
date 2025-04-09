@@ -15,7 +15,7 @@ import lombok.Getter;
  */
 @Entity
 @Getter
-public class User {
+public class Userssss {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,10 +27,10 @@ public class User {
 
 	private String password;
 
-	public User() {
+	public Userssss() {
 	}
 
-	public User(String name, String email, String password) {
+	public Userssss(String name, String email, String password) {
 		this.name = name;
 		this.email = email;
 		this.password = password;
