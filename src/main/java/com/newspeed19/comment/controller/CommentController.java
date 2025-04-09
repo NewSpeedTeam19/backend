@@ -2,6 +2,7 @@ package com.newspeed19.comment.controller;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -9,10 +10,12 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.SessionAttribute;
 
 import com.newspeed19.comment.dto.request.CommentRequestDto;
+import com.newspeed19.comment.dto.response.CommentPageResponseDto;
 import com.newspeed19.comment.dto.response.CommentResponseDto;
 import com.newspeed19.comment.service.CommentService;
 
@@ -53,6 +56,16 @@ public class CommentController {
 		@PathVariable Long id) {
 		commentService.delete(id, userId);
 		return ResponseEntity.ok("삭제 완료");
+	}
+
+	@GetMapping("api/feed/{id}/comments/page")
+	public ResponseEntity<Page<CommentPageResponseDto>> findAllPage(
+		@PathVariable Long id,
+		@RequestParam(defaultValue = "1") int page,
+		@RequestParam(defaultValue = "10") int size
+	) {
+		Page<CommentPageResponseDto> result = commentService.findAllPage(id, page, size);
+		return ResponseEntity.ok(result);
 	}
 
 }

@@ -2,6 +2,8 @@ package com.newspeed19.comment.repository;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
@@ -22,5 +24,17 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "댓글이 없습니다.");
 		}
 		return comments;
+	}
+
+	Page<Comment> findAllByFeedId(Long feedId, Pageable pageable);
+
+	default Page<Comment> findAllByFeedIdOrElseThrow(Feed feed, Pageable pageable) {
+		Page<Comment> pageComment = findAllByFeedId(feed.getId(), pageable);
+
+		if (pageComment.isEmpty()) {
+			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "댓글이 없습니다.");
+		}
+
+		return pageComment;
 	}
 }
