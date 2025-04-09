@@ -1,8 +1,5 @@
 package com.newspeed19.feed.controller;
 
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -20,7 +17,7 @@ import com.newspeed19.feed.dto.request.FeedRequestDto;
 import com.newspeed19.feed.dto.request.FeedRequestGroups;
 import com.newspeed19.feed.dto.response.ApiResponseDto;
 import com.newspeed19.feed.dto.response.FeedDetailResponseDto;
-import com.newspeed19.feed.dto.response.PagedFeedResponseDto;
+import com.newspeed19.feed.dto.response.FeedPageResponseDto;
 import com.newspeed19.feed.service.FeedService;
 
 import lombok.RequiredArgsConstructor;
@@ -44,10 +41,10 @@ public class FeedController {
 	) {
 		FeedPageResponseDto responseDto = feedService.findAllFeed(page, size);
 
-		ApiResponseDto<PagedFeedResponseDto> apiResponseDto = ApiResponseDto.<PagedFeedResponseDto>builder()
-			.success(true)
+		ApiResponseDto<FeedPageResponseDto> apiResponseDto = ApiResponseDto.<FeedPageResponseDto>builder()
+			.code(HttpStatus.OK.value())
 			.message("전체 피드를 조회합니다.")
-			.httpStatus(HttpStatus.OK)
+			.status(HttpStatus.OK.getReasonPhrase())
 			.data(responseDto)
 			.build();
 		return new ResponseEntity<>(apiResponseDto, HttpStatus.OK);
@@ -65,9 +62,9 @@ public class FeedController {
 		FeedDetailResponseDto responseDto = feedService.findFeedById(id);
 
 		ApiResponseDto<FeedDetailResponseDto> apiResponseDto = ApiResponseDto.<FeedDetailResponseDto>builder()
-			.success(true)
+			.code(HttpStatus.OK.value())
 			.message("상세 피드를 조회합니다.")
-			.httpStatus(HttpStatus.OK)
+			.status(HttpStatus.OK.getReasonPhrase())
 			.data(responseDto)
 			.build();
 		return new ResponseEntity<>(apiResponseDto, HttpStatus.OK);
@@ -85,9 +82,9 @@ public class FeedController {
 		FeedDetailResponseDto responseDto = feedService.createFeed(dto);
 
 		ApiResponseDto<FeedDetailResponseDto> apiResponseDto = ApiResponseDto.<FeedDetailResponseDto>builder()
-			.success(true)
+			.code(HttpStatus.CREATED.value())
 			.message("피드를 생성하였습니다.")
-			.httpStatus(HttpStatus.CREATED)
+			.status(HttpStatus.CREATED.getReasonPhrase())
 			.data(responseDto)
 			.build();
 		return new ResponseEntity<>(apiResponseDto, HttpStatus.CREATED);
@@ -107,9 +104,9 @@ public class FeedController {
 		FeedDetailResponseDto responseDto = feedService.updateFeed(dto, id);
 
 		ApiResponseDto<FeedDetailResponseDto> apiResponseDto = ApiResponseDto.<FeedDetailResponseDto>builder()
-			.success(true)
+			.code(HttpStatus.OK.value())
 			.message("피드를 성공적으로 수정하였습니다.")
-			.httpStatus(HttpStatus.OK)
+			.status(HttpStatus.OK.getReasonPhrase())
 			.data(responseDto)
 			.build();
 		return new ResponseEntity<>(apiResponseDto, HttpStatus.OK);
@@ -122,16 +119,16 @@ public class FeedController {
 	 * @return 업데이트된 페이징 피드 정보가 포함된 응답객체를 반환
 	 */
 	@DeleteMapping("/{id}")
-	public ResponseEntity<ApiResponseDto<PagedFeedResponseDto>> delete(
+	public ResponseEntity<ApiResponseDto<FeedPageResponseDto>> delete(
 		@PathVariable Long id,
 		@Validated(FeedRequestGroups.Delete.class) @RequestBody FeedRequestDto dto
 	) {
-		PagedFeedResponseDto responseDto = feedService.deleteFeed(id, dto.getPassword());
+		FeedPageResponseDto responseDto = feedService.deleteFeed(id, dto.getPassword());
 
-		ApiResponseDto<PagedFeedResponseDto> apiResponseDto = ApiResponseDto.<PagedFeedResponseDto>builder()
-			.success(true)
+		ApiResponseDto<FeedPageResponseDto> apiResponseDto = ApiResponseDto.<FeedPageResponseDto>builder()
+			.code(HttpStatus.OK.value())
 			.message("성공적으로 삭제하였습니다. 전체 피드를 반환합니다.")
-			.httpStatus(HttpStatus.OK)
+			.status(HttpStatus.OK.getReasonPhrase())
 			.data(responseDto)
 			.build();
 		return new ResponseEntity<>(apiResponseDto, HttpStatus.OK);
