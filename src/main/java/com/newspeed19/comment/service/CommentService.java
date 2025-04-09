@@ -3,12 +3,16 @@ package com.newspeed19.comment.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.newspeed19.comment.dto.request.CommentRequestDto;
+import com.newspeed19.comment.dto.response.CommentPageResponseDto;
 import com.newspeed19.comment.dto.response.CommentResponseDto;
 import com.newspeed19.comment.entity.Comment;
 import com.newspeed19.comment.repository.CommentRepository;
@@ -70,4 +74,20 @@ public class CommentService {
 		commentRepository.delete(comment);
 	}
 
+	@Transactional(readOnly = true)
+	public Page<CommentPageResponseDto> findAllPage(Long feedId, int page, int size) {
+		int adjustedPage = (page > 0) ? page - 1 : 0;
+		PageRequest pageable = PageRequest.of(adjustedPage, size, Sort.by("updatedAt").descending());
+
+		Feed findFeed = feedRepository.findByIdOrElseThrow(feedId);
+		Page<Comment> commentPage = commentRepository.findAllByFeedIdOrElseThrow(findFeed, pageable);
+
+		return commentPage.map(comment -> CommentPageResponseDto.builder()
+			.id(comment.getId())
+			.userId(comment.getUser().getId())
+			.feedId(comment.getFeed().getId())
+			.content(comment.getContent())
+			.createdAt(comment.getCreatedAt())
+			.updatedAt(comment.getUpdatedAt()).build());
+	}
 }
