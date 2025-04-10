@@ -91,7 +91,7 @@ public class CommentService {
 	@Transactional(readOnly = true)
 	public Page<CommentPageResponseDto> findAllPage(Long feedId, int page, int size) {
 		int adjustedPage = (page > 0) ? page - 1 : 0;
-		PageRequest pageable = PageRequest.of(adjustedPage, size, Sort.by("updatedAt").descending());
+		PageRequest pageable = PageRequest.of(adjustedPage, size, Sort.by("createdAt").ascending());
 
 		Feed findFeed = feedRepository.findById(feedId)
 			.orElseThrow(() -> CustomException
