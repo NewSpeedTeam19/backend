@@ -139,6 +139,16 @@ public class FeedController {
 		return new ResponseEntity<>(apiResponseDto, HttpStatus.OK);
 	}
 
+	@PostMapping("/{id}/like")
+	public ResponseEntity<String> toggleLike(
+		HttpServletRequest req,
+		@PathVariable Long id
+	) {
+		long userId = (Long)req.getAttribute("userId");
+		feedService.toggleLike(id, userId);
+		return ResponseEntity.ok("요청 완료");
+	}
+
 	/**
 	 * 🚀 세션에 저장되어 있는 로그인 유저 아이디 가져오는 메서드
 	 * @param request HttpServletRequest 객체
