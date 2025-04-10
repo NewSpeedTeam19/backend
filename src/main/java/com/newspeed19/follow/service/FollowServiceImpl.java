@@ -213,7 +213,7 @@ public class FollowServiceImpl implements FollowService {
 				return FollowUserResponseDto.builder()
 					.userId(following.getId())
 					.username(following.getName())
-					.profileImageUrl(follower.getImage())
+					.profileImageUrl(following.getImage())
 					.build();
 			})
 			.toList();
