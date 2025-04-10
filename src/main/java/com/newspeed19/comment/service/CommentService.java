@@ -17,8 +17,8 @@ import com.newspeed19.comment.dto.response.CommentResponseDto;
 import com.newspeed19.comment.entity.Comment;
 import com.newspeed19.comment.repository.CommentRepository;
 import com.newspeed19.feed.entity.Feed;
-import com.newspeed19.feed.exception.CustomException;
 import com.newspeed19.feed.exception.ExceptionCode;
+import com.newspeed19.feed.exception.FeedException;
 import com.newspeed19.feed.repository.FeedRepository;
 import com.newspeed19.user.entity.User;
 import com.newspeed19.user.repository.UserRepository;
@@ -37,7 +37,7 @@ public class CommentService {
 	public CommentResponseDto create(Long userId, Long feedId, @Valid CommentRequestDto requestDto) {
 		User findUser = userRepository.getByIdOrThrow(userId);
 		Feed findFeed = feedRepository.findById(feedId)
-			.orElseThrow(() -> CustomException
+			.orElseThrow(() -> FeedException
 				.builder()
 				.exceptionCode(ExceptionCode.FEED_NOT_FOUND)
 				.build());
@@ -55,7 +55,7 @@ public class CommentService {
 	@Transactional(readOnly = true)
 	public List<CommentResponseDto> findAll(Long feedId) {
 		Feed findFeed = feedRepository.findById(feedId)
-			.orElseThrow(() -> CustomException
+			.orElseThrow(() -> FeedException
 				.builder()
 				.exceptionCode(ExceptionCode.FEED_NOT_FOUND)
 				.build());
@@ -90,7 +90,7 @@ public class CommentService {
 		PageRequest pageable = PageRequest.of(adjustedPage, size, Sort.by("updatedAt").descending());
 
 		Feed findFeed = feedRepository.findById(feedId)
-			.orElseThrow(() -> CustomException
+			.orElseThrow(() -> FeedException
 				.builder()
 				.exceptionCode(ExceptionCode.FEED_NOT_FOUND)
 				.build());

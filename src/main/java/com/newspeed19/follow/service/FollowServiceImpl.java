@@ -41,7 +41,7 @@ public class FollowServiceImpl implements FollowService {
 	@Override
 	public FollowResponseDto sendFollowRequest(Long fromUserId, Long targetUserId) {
 		if (fromUserId.equals(targetUserId)) {
-			throw new FollowException(FollowErrorCode.FOLLOW_ALREADY_EXISTS, "자기 자신에게는 팔로우 요청을 보낼 수 없습니다.");
+			throw new FollowException(FollowErrorCode.CANNOT_FOLLOW_SELF);
 		}
 
 		User follower = userRepository.getByIdOrThrow(fromUserId);
@@ -49,7 +49,7 @@ public class FollowServiceImpl implements FollowService {
 
 		followRepository.findByFollowerAndFollowing(follower, following).ifPresent(existing -> {
 			if (existing.getStatus() == FollowStatus.PENDING || existing.getStatus() == FollowStatus.ACCEPTED) {
-				throw new FollowException(FollowErrorCode.FOLLOW_ALREADY_EXISTS, "팔로우 요청이 이미 전송되었거나 수락되었습니다.");
+				throw new FollowException(FollowErrorCode.FOLLOW_ALREADY_EXISTS);
 			}
 		});
 
@@ -85,7 +85,7 @@ public class FollowServiceImpl implements FollowService {
 		User following = userRepository.getByIdOrThrow(targetUserId);
 
 		Follow follow = followRepository.findByFollowerAndFollowingAndStatus(follower, following, FollowStatus.PENDING)
-			.orElseThrow(() -> new FollowException(FollowErrorCode.NO_PENDING_REQUEST, "취소할 팔로우 요청이 존재하지 않습니다."));
+			.orElseThrow(() -> new FollowException(FollowErrorCode.FOLLOW_CANCEL_NOT_FOUND));
 
 		followRepository.delete(follow);
 
@@ -112,7 +112,7 @@ public class FollowServiceImpl implements FollowService {
 		User follower = userRepository.getByIdOrThrow(followerUserId);
 
 		Follow follow = followRepository.findByFollowerAndFollowingAndStatus(follower, following, FollowStatus.PENDING)
-			.orElseThrow(() -> new FollowException(FollowErrorCode.NO_PENDING_REQUEST, "수락할 팔로우 요청이 존재하지 않습니다."));
+			.orElseThrow(() -> new FollowException(FollowErrorCode.FOLLOW_ACCEPT_NOT_FOUND));
 
 		follow.setStatus(FollowStatus.ACCEPTED);
 
@@ -141,7 +141,7 @@ public class FollowServiceImpl implements FollowService {
 		User follower = userRepository.getByIdOrThrow(followerUserId);
 
 		Follow follow = followRepository.findByFollowerAndFollowingAndStatus(follower, following, FollowStatus.PENDING)
-			.orElseThrow(() -> new FollowException(FollowErrorCode.NO_PENDING_REQUEST, "거절할 팔로우 요청이 존재하지 않습니다."));
+			.orElseThrow(() -> new FollowException(FollowErrorCode.FOLLOW_REJECT_NOT_FOUND));
 
 		follow.setStatus(FollowStatus.REJECTED);
 
