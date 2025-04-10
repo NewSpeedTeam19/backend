@@ -15,8 +15,8 @@ import com.newspeed19.feed.dto.response.FeedDetailResponseDto;
 import com.newspeed19.feed.dto.response.FeedPageResponseDto;
 import com.newspeed19.feed.dto.response.FeedResponseDto;
 import com.newspeed19.feed.entity.Feed;
-import com.newspeed19.feed.exception.CustomException;
 import com.newspeed19.feed.exception.ExceptionCode;
+import com.newspeed19.feed.exception.FeedException;
 import com.newspeed19.feed.repository.FeedRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -68,7 +68,7 @@ public class FeedService {
 	@Transactional(readOnly = true)
 	public FeedDetailResponseDto findFeedById(Long id) {
 		Feed feed = feedRepository.findById(id)
-			.orElseThrow(() -> CustomException
+			.orElseThrow(() -> FeedException
 				.builder()
 				.exceptionCode(ExceptionCode.FEED_NOT_FOUND)
 				.build());
