@@ -1,5 +1,8 @@
 package com.newspeed19.feed.service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -51,7 +54,15 @@ public class FeedService {
 	 * @return 페이징된 피드 응답객체를 반환
 	 */
 	@Transactional(readOnly = true)
-	public FeedPageResponseDto findAllFeed(Long userId, int page, int size) {
+	public FeedPageResponseDto findAllFeed(LocalDate startDate, LocalDate endDate, Long userId, int page, int size) {
+		// 기간별 검색 기본값: 최근 1개월
+		LocalDate today = LocalDate.now();
+		if (endDate == null) endDate = today;
+		if (startDate == null) startDate = endDate.minusMonths(1);
+
+		LocalDateTime start = startDate.atStartOfDay(); // 00:00:00
+		LocalDateTime end = endDate.atTime(LocalTime.MAX); // 23:59:59
+
 		// 페이징 객체 생성
 		int adjustedPage = (page > 0) ? page - 1 : 0;
 		PageRequest pageable = PageRequest.of(adjustedPage, size, Sort.by("updatedAt").descending());
@@ -62,11 +73,9 @@ public class FeedService {
 		Page<FeedResponseDto> feedPageResponseDto;
 
 		// 팔로우가 없을 경우, 전체 피드 목록 조회
-
 		if (followingIds.isEmpty()) {
-			feedPageResponseDto = feedRepository.findAll(pageable)
+			feedPageResponseDto = feedRepository.findAllByCreatedAtBetween(start, end, pageable)
 				.map(feed ->
-					// FIXME: likes 카운트 넣어야 됨
 					FeedResponseDto.builder()
 						.id(feed.getId())
 						.contents(feed.getContents())
@@ -78,9 +87,8 @@ public class FeedService {
 						.build()
 				);
 		} else { // 팔로우가 있을 경우, 팔로우한 사람들의 피드 목록 조회
-			feedPageResponseDto = feedRepository.findByUserIdIn(followingIds, pageable)
+			feedPageResponseDto = feedRepository.findByUserIdInAndCreatedAtBetween(followingIds, start, end, pageable)
 				.map(feed ->
-					// FIXME: likes 카운트 넣어야 됨
 					FeedResponseDto.builder()
 						.id(feed.getId())
 						.contents(feed.getContents())
@@ -125,10 +133,10 @@ public class FeedService {
 		UserProfileResponseDto myProfile = profileService.getMyProfile(feed.getUser());
 
 		return FeedDetailResponseDto.builder()
-			// FIXME: likes 카운트 넣어야 됨
 			.id(feed.getId())
 			.contents(feed.getContents())
 			.image(feed.getImage())
+			.likes(feedLikeRepository.countByFeedId(feed.getId()))
 			.commentCount(commentRepository.countByFeedId(feed.getId()))
 			.createdAt(feed.getCreatedAt())
 			.updatedAt(feed.getUpdatedAt())
@@ -201,8 +209,6 @@ public class FeedService {
 
 		// Feed 업데이트
 		feed.updateFeed(dto.getImage(), dto.getContents());
-
-		// FIXME: feedLikes 좋아요 개수 넣어야 됨
 		return FeedDetailResponseDto.builder()
 			.id(feed.getId())
 			.contents(feed.getContents())
@@ -233,9 +239,14 @@ public class FeedService {
 		}
 
 		feedRepository.delete(feed);
-		return this.findAllFeed(loginUserId, 0, 10);
+		return this.findAllFeed(LocalDate.now(), LocalDate.now().minusMonths(1), loginUserId,  0, 10);
 	}
 
+	/**
+	 * [Service] 좋아요 기능 메서드
+	 * @param feedId 피드 id
+	 * @param userId 유저 id
+	 */
 	@Transactional
 	public void toggleLike(Long feedId, Long userId){
 		Feed feed = feedRepository.findById(feedId).orElseThrow(() -> FeedException
