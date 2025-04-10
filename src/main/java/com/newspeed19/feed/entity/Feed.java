@@ -35,6 +35,9 @@ public class Feed extends BaseEntity {
 	@Column(nullable = false, columnDefinition = "longtext")
 	private String contents;
 
+	@Column(nullable = false, columnDefinition = "BIGINT DEFAULT 0")
+	private Long likes = 0L;
+
 	@Column(nullable = false, columnDefinition = "text")
 	private String image;
 
@@ -67,5 +70,19 @@ public class Feed extends BaseEntity {
 	public void updateFeed(String contents, String image) {
 		this.contents = contents;
 		this.image = image;
+	}
+
+	/**
+	 * 🚀 피드 좋아요 증가 메서드
+	 */
+	public void increaseLikes() {
+		this.likes += 1;
+	}
+
+	/**
+	 * 🚀 피드 좋아요 감소 메서드
+	 */
+	public void decreaseLikes() {
+		if (this.likes > 0) this.likes -= 1;
 	}
 }

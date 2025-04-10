@@ -9,10 +9,8 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.server.ResponseStatusException;
 
 import com.newspeed19.comment.dto.response.CommentResponseDto;
 import com.newspeed19.comment.repository.CommentLikeRepository;
@@ -54,54 +52,40 @@ public class FeedService {
 	 * @return 페이징된 피드 응답객체를 반환
 	 */
 	@Transactional(readOnly = true)
-	public FeedPageResponseDto findAllFeed(LocalDate startDate, LocalDate endDate, Long userId, int page, int size) {
-		// 기간별 검색 기본값: 최근 1개월
-		LocalDate today = LocalDate.now();
-		if (endDate == null) endDate = today;
-		if (startDate == null) startDate = endDate.minusMonths(1);
+	public FeedPageResponseDto findAllFeed(LocalDate start, LocalDate end, Long userId, int page, int size) {
+		// 기간별 검색 (기본값: 최근 1개월)
+		LocalDateTime[] dates = getDefaultDate(start, end);
+		LocalDateTime startDate = dates[0]; // 시작 날짜
+		LocalDateTime endDate = dates[1]; // 마지막 날짜
 
-		LocalDateTime start = startDate.atStartOfDay(); // 00:00:00
-		LocalDateTime end = endDate.atTime(LocalTime.MAX); // 23:59:59
-
-		// 페이징 객체 생성
-		int adjustedPage = (page > 0) ? page - 1 : 0;
-		PageRequest pageable = PageRequest.of(adjustedPage, size, Sort.by("updatedAt").descending());
+		// 페이징 객체 생성 (수정일자 내림차순, 좋아요 많은 순)
+		int adjustedPage = Math.max(page - 1, 0); // 페이지 번호요청 n이 들어오면 n-1번째 페이지 출력
+		PageRequest pageable = PageRequest.of(
+			adjustedPage,
+			size,
+			Sort.by(Sort.Order.desc("updatedAt"), Sort.Order.desc("likes"))
+		);
 
 		// 내가 팔로우한 유저 ID 리스트 조회
 		List<Long> followingIds = followRepository.findByFollowingUserIds(userId);
 
-		Page<FeedResponseDto> feedPageResponseDto;
-
 		// 팔로우가 없을 경우, 전체 피드 목록 조회
-		if (followingIds.isEmpty()) {
-			feedPageResponseDto = feedRepository.findAllByCreatedAtBetween(start, end, pageable)
-				.map(feed ->
-					FeedResponseDto.builder()
-						.id(feed.getId())
-						.contents(feed.getContents())
-						.image(feed.getImage())
-						.likes(feedLikeRepository.countByFeedId(feed.getId()))
-						.commentCount(commentRepository.countByFeedId(feed.getId()))
-						.createdAt(feed.getCreatedAt())
-						.updatedAt(feed.getUpdatedAt())
-						.build()
-				);
-		} else { // 팔로우가 있을 경우, 팔로우한 사람들의 피드 목록 조회
-			feedPageResponseDto = feedRepository.findByUserIdInAndCreatedAtBetween(followingIds, start, end, pageable)
-				.map(feed ->
-					FeedResponseDto.builder()
-						.id(feed.getId())
-						.contents(feed.getContents())
-						.image(feed.getImage())
-						.likes(feedLikeRepository.countByFeedId(feed.getId()))
-						.commentCount(commentRepository.countByFeedId(feed.getId()))
-						.createdAt(feed.getCreatedAt())
-						.updatedAt(feed.getUpdatedAt())
-						.build()
-				);
-		}
+		Page<Feed> feedPage = followingIds.isEmpty()
+			? feedRepository.findAllByCreatedAtBetween(startDate, endDate, pageable)
+			: feedRepository.findByUserIdInAndCreatedAtBetween(followingIds, startDate, endDate, pageable);
 
 		// 응답 객체 생성
+		Page<FeedResponseDto> feedPageResponseDto = feedPage.map(feed ->
+			FeedResponseDto.builder()
+				.id(feed.getId())
+				.contents(feed.getContents())
+				.image(feed.getImage())
+				.likes(feedLikeRepository.countByFeedId(feed.getId()))
+				.commentCount(commentRepository.countByFeedId(feed.getId()))
+				.createdAt(feed.getCreatedAt())
+				.updatedAt(feed.getUpdatedAt())
+				.build()
+		);
 		List<FeedResponseDto> feeds = feedPageResponseDto.getContent();
 
 		return FeedPageResponseDto.builder()
@@ -188,18 +172,17 @@ public class FeedService {
 	@Transactional
 	public FeedDetailResponseDto updateFeed(FeedRequestDto dto, Long loginUserId, Long id) {
 		Feed feed = feedRepository.findById(id)
-			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 게시글입니다."));
+			.orElseThrow(() -> FeedException.builder()
+				.errorCode(FeedErrorCode.FEED_NOT_FOUND)
+				.build());
 
 		// 로그인 유저가 작성한 피드가 아닐 경우 예외 처리
 		if (!loginUserId.equals(feed.getUser().getId())) {
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "수정 권한이 없습니다.");
+			throw FeedException.builder().errorCode(FeedErrorCode.FEED_FORBIDDEN).build();
 		}
 
-		// 로그인 유저
-		User user = userRepository.getByIdOrThrow(loginUserId);
-
 		// 유저 DTO
-		UserProfileResponseDto myProfile = profileService.getMyProfile(user);
+		UserProfileResponseDto myProfile = profileService.getMyProfile(feed.getUser());
 
 		// 피드에 달린 모든 댓글 가져오기
 		List<CommentResponseDto> comments = commentRepository.findAllByFeedId(id).stream()
@@ -231,11 +214,15 @@ public class FeedService {
 	@Transactional
 	public FeedPageResponseDto deleteFeed(Long loginUserId, Long feedId) {
 		Feed feed = feedRepository.findById(feedId)
-			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 게시글입니다."));
+			.orElseThrow(() -> FeedException.builder()
+				.errorCode(FeedErrorCode.FEED_NOT_FOUND)
+				.build());
 
 		// 로그인 유저가 작성한 피드가 아닐 경우 예외 처리
 		if (!loginUserId.equals(feed.getUser().getId())) {
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "수정 권한이 없습니다.");
+			throw FeedException.builder()
+				.errorCode(FeedErrorCode.FEED_NOT_FOUND)
+				.build();
 		}
 
 		feedRepository.delete(feed);
@@ -245,25 +232,37 @@ public class FeedService {
 	/**
 	 * [Service] 좋아요 기능 메서드
 	 * @param feedId 피드 id
-	 * @param userId 유저 id
+	 * @param loginUserId 로그인 유저 id
 	 */
 	@Transactional
-	public void toggleLike(Long feedId, Long userId){
+	public void toggleLike(Long feedId, Long loginUserId){
 		Feed feed = feedRepository.findById(feedId).orElseThrow(() -> FeedException
 			.builder()
 			.errorCode(FeedErrorCode.FEED_NOT_FOUND)
 			.build());
-		User user = userRepository.getByIdOrThrow(userId);
 
-		if(feed.getUser().getId().equals(userId)){
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"본인글에 좋아요 불가능 합니다.");
+		User user = userRepository.getByIdOrThrow(loginUserId);
+
+		// 본인 글에 좋아요를 눌렀을 경우
+		if (!loginUserId.equals(feed.getUser().getId())) {
+			throw FeedException.builder().errorCode(FeedErrorCode.FEED_MY_FEED_NO_LIKES).build();
 		}
 
-		Optional<FeedLike> like = feedLikeRepository.findByUserAndFeed(user,feed);
+		Optional<FeedLike> feedLike = feedLikeRepository.findByUserAndFeed(user,feed);
 
-		if(feedLikeRepository.existsByUserAndFeed(user,feed)){
-			feedLikeRepository.delete(like.get());
-		}else{
+		// 좋아요 내역이 있을 경우
+		if (feedLike.isPresent()){
+			// FeedLike 데이터 삭제
+			FeedLike like = feedLike.get();
+			feedLikeRepository.delete(like);
+			// Feed 엔티티 좋아요 감소
+			feed.decreaseLikes();
+		}
+		else {
+			// Feed 엔티티 좋아요 증가
+			feed.increaseLikes();
+
+			// FeedLike 데이터 추가
 			feedLikeRepository.save(
 				FeedLike.builder()
 					.user(user)
@@ -272,4 +271,28 @@ public class FeedService {
 			);
 		}
 	}
+
+	/**
+	 * 🚀 사용자로 입력받은 날짜 값을 설정하여 반환하는 메서드
+	 * @return [0]: 시작날짜, [1]: 마지막날짜
+	 */
+	public LocalDateTime[] getDefaultDate(LocalDate start, LocalDate end) {
+		// 날짜 기본 값이 필요한 경우 (최근 1개월)
+		if (start == null || end == null) {
+			LocalDate now = LocalDate.now();
+			LocalDate monthAgo = now.minusMonths(1);
+			return new LocalDateTime[] {
+				monthAgo.atStartOfDay(), // 00:00:00
+				now.atTime(LocalTime.MAX) // 23:59:59
+			};
+		}
+		// 입력받은 날짜 값의 시간을 설정하여 반환
+		else {
+			return new LocalDateTime[] {
+				start.atStartOfDay(), // 00:00:00
+				end.atTime(LocalTime.MAX) // 23:59:59
+			};
+		}
+	}
+
 }
