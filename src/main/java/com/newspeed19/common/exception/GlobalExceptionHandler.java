@@ -1,6 +1,8 @@
 package com.newspeed19.common.exception;
 
 import java.security.SignatureException;
+import java.util.Objects;
+import java.util.Optional;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,8 +25,14 @@ public class GlobalExceptionHandler {
 	 */
 	@ExceptionHandler(CustomException.class)
 	public ResponseEntity<ExceptionResponseDto> handleCustomException(CustomException exception) {
+		// CustomException 에 code 가 null 일 경우, 500 에러
+		HttpStatus httpStatus = Optional.ofNullable(HttpStatus.resolve(exception.getCode()))
+			.orElse(HttpStatus.INTERNAL_SERVER_ERROR);
+
+		// 예외 응답 DTO 생성
 		ExceptionResponseDto response = ExceptionResponseDto.builder()
 			.code(exception.getCode())
+			.status(httpStatus.getReasonPhrase())
 			.message(exception.getMessage())
 			.build();
 
@@ -40,6 +48,7 @@ public class GlobalExceptionHandler {
 
 		ExceptionResponseDto response = ExceptionResponseDto.builder()
 			.code(HttpStatus.BAD_REQUEST.value())
+			.status(HttpStatus.BAD_REQUEST.getReasonPhrase())
 			.message(errorMessage)
 			.build();
 
@@ -53,6 +62,7 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ExceptionResponseDto> handleConstraintViolation(ConstraintViolationException exception) {
 		ExceptionResponseDto response = ExceptionResponseDto.builder()
 			.code(HttpStatus.BAD_REQUEST.value())
+			.status(HttpStatus.BAD_REQUEST.getReasonPhrase())
 			.message(exception.getMessage())
 			.build();
 
@@ -66,6 +76,7 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ExceptionResponseDto> handleSignatureException(SignatureException exception) {
 		ExceptionResponseDto response = ExceptionResponseDto.builder()
 			.code(HttpStatus.BAD_REQUEST.value())
+			.status(HttpStatus.BAD_REQUEST.getReasonPhrase())
 			.message(exception.getMessage())
 			.build();
 
@@ -79,6 +90,7 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ExceptionResponseDto> handleMalformedJwtException(MalformedJwtException exception) {
 		ExceptionResponseDto response = ExceptionResponseDto.builder()
 			.code(HttpStatus.BAD_REQUEST.value())
+			.status(HttpStatus.BAD_REQUEST.getReasonPhrase())
 			.message(exception.getMessage())
 			.build();
 
@@ -92,6 +104,7 @@ public class GlobalExceptionHandler {
 	public ResponseEntity<ExceptionResponseDto> handleUnexpectedException(Exception exception) {
 		ExceptionResponseDto response = ExceptionResponseDto.builder()
 			.code(HttpStatus.INTERNAL_SERVER_ERROR.value())
+			.status(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase())
 			.message("서버 내부 오류가 발생했습니다.")
 			.build();
 
