@@ -7,7 +7,7 @@ import lombok.RequiredArgsConstructor;
 @Getter
 public enum UserErrorCode {
 
-	USER_ERROR_CODE(000, "여기에 에러코드를 설정해주세요.");
+	NOT_FOUND_USER(401,"유저를 찾을 수 없습니다.");
 
 	private final int code;
 	private final String message;
