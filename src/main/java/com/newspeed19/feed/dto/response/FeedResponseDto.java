@@ -24,7 +24,7 @@ public class FeedResponseDto {
 	private Long likes = 0L;
 
 	@Builder.Default
-	private Long comments = 0L;
+	private Long commentCount = 0L;
 
 	@JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "yyyy-MM-dd HH:mm:ss")
 	private final LocalDateTime createdAt;

@@ -16,14 +16,14 @@ public class CommentResponseDto {
 	private final LocalDateTime createdAt;
 	private final LocalDateTime updatedAt;
 
-	public CommentResponseDto(Comment comment, long countlikes) {
+	public CommentResponseDto(Comment comment, Long countLikes) {
 		this.id = comment.getId();
 		this.userId = comment.getUser().getId();
 		this.feedId = comment.getFeed().getId();
 		this.content = comment.getContent();
 		this.createdAt = comment.getCreatedAt();
 		this.updatedAt = comment.getUpdatedAt();
-		this.countLikes = countlikes;
+		this.countLikes = countLikes;
 	}
 
 	public static CommentResponseDto toDto(Comment comment, Long countLikes) {
