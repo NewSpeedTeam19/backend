@@ -87,8 +87,4 @@ public class AuthFilter implements Filter {
 		return Long.parseLong(jwtProvider.getUserId(token));
 	}
 
-	private long getUserIdFromToken(String token) {
-		jwtProvider.validateToken(token);
-		return Long.parseLong(jwtProvider.getUserId(token));
-	}
 }

@@ -6,5 +6,5 @@ package com.newspeed19.auth.repository;
  * @author         : yong
  * @date           : 4/9/25
  * @description    :
- */public class tokenRepository {
+ */public class TokenRepository {
 }
