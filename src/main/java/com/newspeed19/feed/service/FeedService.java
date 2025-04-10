@@ -11,13 +11,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.newspeed19.comment.dto.response.CommentResponseDto;
+import com.newspeed19.comment.repository.CommentLikeRepository;
 import com.newspeed19.comment.repository.CommentRepository;
 import com.newspeed19.feed.dto.request.FeedRequestDto;
 import com.newspeed19.feed.dto.response.FeedDetailResponseDto;
 import com.newspeed19.feed.dto.response.FeedPageResponseDto;
 import com.newspeed19.feed.dto.response.FeedResponseDto;
 import com.newspeed19.feed.entity.Feed;
-import com.newspeed19.feed.exception.ExceptionCode;
+import com.newspeed19.feed.exception.FeedErrorCode;
 import com.newspeed19.feed.exception.FeedException;
 import com.newspeed19.feed.repository.FeedRepository;
 import com.newspeed19.follow.repository.FollowRepository;
@@ -36,6 +37,7 @@ public class FeedService {
 	private final FeedRepository feedRepository;
 	private final FollowRepository followRepository;
 	private final CommentRepository commentRepository;
+	private final CommentLikeRepository commentLikeRepository;
 	private final UserRepository userRepository;
 
 	/**
@@ -56,14 +58,16 @@ public class FeedService {
 		Page<FeedResponseDto> feedPageResponseDto;
 
 		// 팔로우가 없을 경우, 전체 피드 목록 조회
+
 		if (followingIds.isEmpty()) {
 			feedPageResponseDto = feedRepository.findAll(pageable)
 				.map(feed ->
-					// FIXME: 댓글 불러오기 로직 추가 예정
+					// FIXME: likes 카운트 넣어야 됨
 					FeedResponseDto.builder()
 						.id(feed.getId())
 						.contents(feed.getContents())
 						.image(feed.getImage())
+						.commentCount(commentRepository.countByFeedId(feed.getId()))
 						.createdAt(feed.getCreatedAt())
 						.updatedAt(feed.getUpdatedAt())
 						.build()
@@ -71,11 +75,12 @@ public class FeedService {
 		} else { // 팔로우가 있을 경우, 팔로우한 사람들의 피드 목록 조회
 			feedPageResponseDto = feedRepository.findByUserIdIn(followingIds, pageable)
 				.map(feed ->
-					// FIXME: 댓글 불러오기 로직 추가 예정
+					// FIXME: likes 카운트 넣어야 됨
 					FeedResponseDto.builder()
 						.id(feed.getId())
 						.contents(feed.getContents())
 						.image(feed.getImage())
+						.commentCount(commentRepository.countByFeedId(feed.getId()))
 						.createdAt(feed.getCreatedAt())
 						.updatedAt(feed.getUpdatedAt())
 						.build()
@@ -101,21 +106,24 @@ public class FeedService {
 		Feed feed = feedRepository.findById(id)
 			.orElseThrow(() -> FeedException
 				.builder()
-				.exceptionCode(ExceptionCode.FEED_NOT_FOUND)
+				.errorCode(FeedErrorCode.FEED_NOT_FOUND)
 				.build());
 
-		// 피드에 달린 댓글 목록 DTO
+		// 피드에 달린 댓글 목록
 		List<CommentResponseDto> comments = commentRepository.findAllByFeedId(id).stream()
-			.map(CommentResponseDto::toDto)
+			.map(comment ->
+				CommentResponseDto.toDto(comment, commentLikeRepository.countByCommentId(comment.getId())))
 			.toList();
 
 		// 유저 DTO
 		UserProfileResponseDto myProfile = profileService.getMyProfile(feed.getUser());
 
 		return FeedDetailResponseDto.builder()
+			// FIXME: likes 카운트 넣어야 됨
 			.id(feed.getId())
 			.contents(feed.getContents())
 			.image(feed.getImage())
+			.commentCount(commentRepository.countByFeedId(feed.getId()))
 			.createdAt(feed.getCreatedAt())
 			.updatedAt(feed.getUpdatedAt())
 			.user(myProfile)
@@ -131,9 +139,8 @@ public class FeedService {
 	 */
 	@Transactional
 	public FeedDetailResponseDto createFeed(Long loginUserId, FeedRequestDto dto) {
-		// 로그인 유저 FIXME: LoginService 구현 해야 함
-		User user = userRepository.findById(loginUserId)
-			.orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+		// 로그인 유저
+		User user = userRepository.getByIdOrThrow(loginUserId);
 
 		// 유저 DTO
 		UserProfileResponseDto myProfile = profileService.getMyProfile(user);
@@ -174,21 +181,22 @@ public class FeedService {
 			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "수정 권한이 없습니다.");
 		}
 
-		// 로그인 유저 FIXME: LoginService 구현 해야 함
-		User user = userRepository.findById(loginUserId)
-			.orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+		// 로그인 유저
+		User user = userRepository.getByIdOrThrow(loginUserId);
 
 		// 유저 DTO
 		UserProfileResponseDto myProfile = profileService.getMyProfile(user);
 
-		// 피드에 달린 댓글 목록 DTO
+		// 피드에 달린 모든 댓글 가져오기
 		List<CommentResponseDto> comments = commentRepository.findAllByFeedId(id).stream()
-			.map(CommentResponseDto::toDto)
+			.map(comment ->
+				CommentResponseDto.toDto(comment, commentLikeRepository.countByCommentId(comment.getId())))
 			.toList();
 
 		// Feed 업데이트
 		feed.updateFeed(dto.getImage(), dto.getContents());
 
+		// FIXME: feedLikes 좋아요 개수 넣어야 됨
 		return FeedDetailResponseDto.builder()
 			.id(feed.getId())
 			.contents(feed.getContents())
@@ -196,6 +204,7 @@ public class FeedService {
 			.createdAt(feed.getCreatedAt())
 			.updatedAt(feed.getUpdatedAt())
 			.user(myProfile)
+			.commentCount(commentRepository.countByFeedId(feed.getId()))
 			.comments(comments)
 			.build();
 	}

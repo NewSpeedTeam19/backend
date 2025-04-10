@@ -6,6 +6,7 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import com.newspeed19.common.entity.BaseEntity;
 import com.newspeed19.user.entity.User;
 
 import jakarta.persistence.Column;
@@ -27,8 +28,7 @@ import lombok.Setter;
 @Table(name = "feed")
 @Getter
 @NoArgsConstructor
-@EntityListeners(AuditingEntityListener.class) // FIXME: BaseEntity 상속 시, 제거
-public class Feed {
+public class Feed extends BaseEntity {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -41,17 +41,9 @@ public class Feed {
 	private String image;
 
 	@ManyToOne(fetch = FetchType.LAZY)
-	@JoinColumn(name = "user_id") // FIXME: nullable = false 붙일 예정
+	@JoinColumn(nullable = false, name = "user_id")
 	@Setter
 	private User user;
-
-	// FIXME: BaseEntity 상속 시, 제거
-	@CreatedDate
-	@Column(updatable = false)
-	private LocalDateTime createdAt;
-
-	@LastModifiedDate
-	private LocalDateTime updatedAt;
 
 	/**
 	 * ✅ Builder 생성자
