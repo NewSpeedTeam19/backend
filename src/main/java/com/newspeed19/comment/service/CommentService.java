@@ -20,7 +20,7 @@ import com.newspeed19.comment.entity.CommentLike;
 import com.newspeed19.comment.repository.CommentLikeRepository;
 import com.newspeed19.comment.repository.CommentRepository;
 import com.newspeed19.feed.entity.Feed;
-import com.newspeed19.feed.exception.ExceptionCode;
+import com.newspeed19.feed.exception.FeedErrorCode;
 import com.newspeed19.feed.exception.FeedException;
 import com.newspeed19.feed.repository.FeedRepository;
 import com.newspeed19.user.entity.User;
@@ -43,7 +43,7 @@ public class CommentService {
 		Feed findFeed = feedRepository.findById(feedId)
 			.orElseThrow(() -> FeedException
 				.builder()
-				.exceptionCode(ExceptionCode.FEED_NOT_FOUND)
+				.errorCode(FeedErrorCode.FEED_NOT_FOUND)
 				.build());
 
 		Comment comment = Comment.builder()
@@ -53,7 +53,7 @@ public class CommentService {
 			.build();
 
 		commentRepository.save(comment);
-		return new CommentResponseDto(comment,0);
+		return new CommentResponseDto(comment, 0L);
 	}
 
 	@Transactional(readOnly = true)
@@ -61,7 +61,7 @@ public class CommentService {
 		Feed findFeed = feedRepository.findById(feedId)
 			.orElseThrow(() -> FeedException
 				.builder()
-				.exceptionCode(ExceptionCode.FEED_NOT_FOUND)
+				.errorCode(FeedErrorCode.FEED_NOT_FOUND)
 				.build());
 		List<Comment> comments = commentRepository.findByFeedIdOrElseThrow(findFeed);
 		return comments.stream()
@@ -96,7 +96,7 @@ public class CommentService {
 		Feed findFeed = feedRepository.findById(feedId)
 			.orElseThrow(() -> FeedException
 				.builder()
-				.exceptionCode(ExceptionCode.FEED_NOT_FOUND)
+				.errorCode(FeedErrorCode.FEED_NOT_FOUND)
 				.build());
 		Page<Comment> commentPage = commentRepository.findAllByFeedIdOrElseThrow(findFeed, pageable);
 
@@ -137,7 +137,7 @@ public class CommentService {
 		}
 	}
 
-	public long countLikes(Long commentId) {
+	public Long countLikes(Long commentId) {
 		return commentLikeRepository.countByCommentId(commentId);
 	}
 }

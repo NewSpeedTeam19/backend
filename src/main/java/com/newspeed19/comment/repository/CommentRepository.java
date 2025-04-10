@@ -37,4 +37,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
 		return pageComment;
 	}
+
+	Long countByFeedId(Long feedId);
 }
