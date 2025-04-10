@@ -24,13 +24,19 @@ public class JwtProvider {
 	@Value("${jwt.secret}")
 	private String secretKey;
 
-	private final long ACCESS_TOKEN_VALIDITY = 1000L * 60; // 1분
+	private final long ACCESS_TOKEN_VALIDITY = 1000L * 60 * 5; // 1분
+	private final long REFRESH_TOKEN_VALIDITY = 1000L * 60 * 10; // 10분
 
 	public String createToken(long userId, String userType) {
 		Claims claims = Jwts.claims().setSubject(String.valueOf(userId));
 		Date now = new Date();
-		Date expiration = new Date(now.getTime() + ACCESS_TOKEN_VALIDITY);
+		Date expiration;
 
+		if (userType.equals("access")) {
+			expiration = new Date(now.getTime() + ACCESS_TOKEN_VALIDITY);
+		} else {
+			expiration = new Date(now.getTime() + REFRESH_TOKEN_VALIDITY);
+		}
 		Key key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
 
 		return Jwts.builder()
