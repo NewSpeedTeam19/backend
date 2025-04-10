@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
 import com.newspeed19.user.entity.User;
 import com.newspeed19.user.profile.dto.MessageResponseDto;
 import com.newspeed19.user.profile.dto.UserProfileResponseDto;
@@ -26,11 +25,14 @@ public class ProfileController {
 
 	private final ProfileService profileService;
 	private final UserRepository userRepository;
+	private final JwtProvider jwtProvider;
 
+	// 내 프로필 조회
 	// 내 프로필 조회
 	@GetMapping
 	public ResponseEntity<UserProfileResponseDto> getMyProfile(HttpServletRequest request) {
 		Long userId = (Long)request.getAttribute("userId");
+
 		User user = userRepository.getByIdOrThrow(userId);
 		return ResponseEntity.ok(profileService.getMyProfile(user));
 	}
@@ -41,8 +43,7 @@ public class ProfileController {
 		@RequestBody @Valid UserProfileUpdateRequestDto req) {
 		Long userId = Long.valueOf((String)request.getAttribute("userId"));
 		User user = userRepository.getByIdOrThrow(userId);
-
-		profileService.updateMyProfile(user, req);
+		profileService.updateMyProfile(user, requestDto);
 		return ResponseEntity.ok(new MessageResponseDto("프로필이 성공적으로 수정되었습니다."));
 	}
 

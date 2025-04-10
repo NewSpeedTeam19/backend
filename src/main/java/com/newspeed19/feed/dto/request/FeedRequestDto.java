@@ -22,8 +22,4 @@ public class FeedRequestDto {
 
 	@NotBlank(message = "이미지를 첨부해주세요.", groups = {Create.class, Update.class})
 	private final String image;
-
-	@NotBlank(message = "비밀번호를 입력해주세요.", groups = {Create.class, Update.class, Delete.class})
-	@Size(max = 20, message = "비밀번호는 20자를 넘을 수 없습니다.", groups = {Create.class, Update.class, Delete.class})
-	private final String password;
 }

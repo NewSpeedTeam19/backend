@@ -6,6 +6,8 @@ import java.util.Optional;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.newspeed19.follow.entity.Follow;
 import com.newspeed19.follow.entity.FollowStatus;
@@ -25,4 +27,7 @@ public interface FollowRepository extends JpaRepository<Follow, Long> {
 	Page<Follow> findByFollowerAndStatus(User follower, FollowStatus status, Pageable pageable);
 
 	Page<Follow> findByFollowingAndStatus(User following, FollowStatus status, Pageable pageable);
+
+	@Query("SELECT f.following.id FROM Follow f WHERE f.follower.id = :userId AND f.status = 'ACCEPTED'")
+	List<Long> findByFollowingUserIds(@Param("userId") Long userId);
 }
