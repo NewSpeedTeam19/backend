@@ -1,5 +1,8 @@
 package com.newspeed19.feed.controller;
 
+import java.time.LocalDate;
+
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
@@ -37,11 +40,15 @@ public class FeedController {
 	 */
 	@GetMapping
 	public ResponseEntity<ApiResponseDto<FeedPageResponseDto>> findAll(
+		@RequestParam(value = "startDate", required = false)
+		@DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
+		@RequestParam(value = "endDate", required = false)
+		@DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate,
 		@RequestParam(defaultValue = "1") int page,
 		@RequestParam(defaultValue = "10") int size,
 		HttpServletRequest request
 	) {
-		FeedPageResponseDto responseDto = feedService.findAllFeed(getLoginUserId(request), page, size);
+		FeedPageResponseDto responseDto = feedService.findAllFeed(startDate, endDate, getLoginUserId(request), page, size);
 
 		ApiResponseDto<FeedPageResponseDto> apiResponseDto = ApiResponseDto.<FeedPageResponseDto>builder()
 			.code(HttpStatus.OK.value())
