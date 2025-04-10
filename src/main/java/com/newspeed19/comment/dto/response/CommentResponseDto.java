@@ -12,20 +12,22 @@ public class CommentResponseDto {
 	private final Long userId;
 	private final Long feedId;
 	private final String content;
+	private final Long countLikes;
 	private final LocalDateTime createdAt;
 	private final LocalDateTime updatedAt;
 
-	public CommentResponseDto(Comment comment) {
+	public CommentResponseDto(Comment comment, long countlikes) {
 		this.id = comment.getId();
 		this.userId = comment.getUser().getId();
 		this.feedId = comment.getFeed().getId();
 		this.content = comment.getContent();
 		this.createdAt = comment.getCreatedAt();
 		this.updatedAt = comment.getUpdatedAt();
+		this.countLikes = countlikes;
 	}
 
-	public static CommentResponseDto toDto(Comment comment) {
-		return new CommentResponseDto(comment);
+	public static CommentResponseDto toDto(Comment comment, Long countLikes) {
+		return new CommentResponseDto(comment, countLikes);
 	}
 
 }

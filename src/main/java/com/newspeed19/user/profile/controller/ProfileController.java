@@ -1,5 +1,6 @@
 package com.newspeed19.user.profile.controller;
 
+import com.newspeed19.auth.service.JwtProvider;
 import com.newspeed19.user.entity.User;
 import com.newspeed19.user.profile.dto.MessageResponseDto;
 import com.newspeed19.user.profile.dto.UserProfileResponseDto;
@@ -20,24 +21,26 @@ public class ProfileController {
 
 	private final ProfileService profileService;
 	private final UserRepository userRepository;
+	private final JwtProvider jwtProvider;
 
 	// 내 프로필 조회
+	// 내 프로필 조회
 	@GetMapping
-	public ResponseEntity<UserProfileResponseDto> getMyProfile(HttpServletRequest request) {
-		Long userId = Long.valueOf((String) request.getAttribute("userId"));
+	public ResponseEntity<UserProfileResponseDto> getMyProfile(HttpServletRequest req) {
+		Long userId = (Long)req.getAttribute("userId");
 		User user = userRepository.getByIdOrThrow(userId);
 		return ResponseEntity.ok(profileService.getMyProfile(user));
 	}
+
 	// 내 프로필 수정
 	@PutMapping
 	public ResponseEntity<MessageResponseDto> updateProfile(
-		HttpServletRequest request,
-		@RequestBody @Valid UserProfileUpdateRequestDto req
+		HttpServletRequest req,
+		@RequestBody @Valid UserProfileUpdateRequestDto requestDto
 	) {
-		Long userId = Long.valueOf((String) request.getAttribute("userId"));
+		Long userId = (Long)req.getAttribute("userId");
 		User user = userRepository.getByIdOrThrow(userId);
-
-		profileService.updateMyProfile(user, req);
+		profileService.updateMyProfile(user, requestDto);
 		return ResponseEntity.ok(new MessageResponseDto("프로필이 성공적으로 수정되었습니다."));
 	}
 
