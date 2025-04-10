@@ -48,14 +48,15 @@ public class AuthFilter implements Filter {
 				if (isBlacklisted(token)) {
 					throw new RuntimeException("사용 중지된 토큰입니다.");
 				}
-				jwtProvider.validateToken(token);
+				long id = getUserIdFromToken(token);
+				request.setAttribute("userId", id);
 			} catch (JWTVerificationException e) {
 				throw new RuntimeException("실패~");
 			}
 		}
 		filterChain.doFilter(servletRequest, response);
 	}
-  
+
 	public boolean isBlacklisted(String token) {
 		Long expiry = JwtBlackList.list.get(token);
 		if (expiry == null)
@@ -65,5 +66,10 @@ public class AuthFilter implements Filter {
 
 	private boolean isWhiteList(String uri) {
 		return PatternMatchUtils.simpleMatch(WHITE_LIST, uri);
+	}
+
+	private long getUserIdFromToken(String token) {
+		jwtProvider.validateToken(token);
+		return Long.parseLong(jwtProvider.getUserId(token));
 	}
 }

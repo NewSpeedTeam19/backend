@@ -21,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class WebConfig {
 	private final JwtProvider jwtProvider;
+	// private final
 
 	@Bean
 	public FilterRegistrationBean authFilter() {
