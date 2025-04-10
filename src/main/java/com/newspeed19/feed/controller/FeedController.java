@@ -20,6 +20,7 @@ import com.newspeed19.feed.dto.response.FeedDetailResponseDto;
 import com.newspeed19.feed.dto.response.FeedPageResponseDto;
 import com.newspeed19.feed.service.FeedService;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -37,9 +38,10 @@ public class FeedController {
 	@GetMapping
 	public ResponseEntity<ApiResponseDto<FeedPageResponseDto>> findAll(
 		@RequestParam(defaultValue = "1") int page,
-		@RequestParam(defaultValue = "10") int size
+		@RequestParam(defaultValue = "10") int size,
+		HttpServletRequest request
 	) {
-		FeedPageResponseDto responseDto = feedService.findAllFeed(page, size);
+		FeedPageResponseDto responseDto = feedService.findAllFeed(getLoginUserId(request), page, size);
 
 		ApiResponseDto<FeedPageResponseDto> apiResponseDto = ApiResponseDto.<FeedPageResponseDto>builder()
 			.code(HttpStatus.OK.value())
@@ -77,9 +79,10 @@ public class FeedController {
 	 */
 	@PostMapping("/create")
 	public ResponseEntity<ApiResponseDto<FeedDetailResponseDto>> create(
-		@Validated(FeedRequestGroups.Create.class) @RequestBody FeedRequestDto dto
+		@Validated(FeedRequestGroups.Create.class) @RequestBody FeedRequestDto dto,
+		HttpServletRequest request
 	) {
-		FeedDetailResponseDto responseDto = feedService.createFeed(dto);
+		FeedDetailResponseDto responseDto = feedService.createFeed(getLoginUserId(request), dto);
 
 		ApiResponseDto<FeedDetailResponseDto> apiResponseDto = ApiResponseDto.<FeedDetailResponseDto>builder()
 			.code(HttpStatus.CREATED.value())
@@ -99,9 +102,10 @@ public class FeedController {
 	@PatchMapping("/{id}")
 	public ResponseEntity<ApiResponseDto<FeedDetailResponseDto>> update(
 		@PathVariable Long id,
-		@Validated(FeedRequestGroups.Update.class) @RequestBody FeedRequestDto dto
+		@Validated(FeedRequestGroups.Update.class) @RequestBody FeedRequestDto dto,
+		HttpServletRequest request
 	) {
-		FeedDetailResponseDto responseDto = feedService.updateFeed(dto, id);
+		FeedDetailResponseDto responseDto = feedService.updateFeed(dto, getLoginUserId(request), id);
 
 		ApiResponseDto<FeedDetailResponseDto> apiResponseDto = ApiResponseDto.<FeedDetailResponseDto>builder()
 			.code(HttpStatus.OK.value())
@@ -121,9 +125,10 @@ public class FeedController {
 	@DeleteMapping("/{id}")
 	public ResponseEntity<ApiResponseDto<FeedPageResponseDto>> delete(
 		@PathVariable Long id,
-		@Validated(FeedRequestGroups.Delete.class) @RequestBody FeedRequestDto dto
+		@Validated(FeedRequestGroups.Delete.class) @RequestBody FeedRequestDto dto,
+		HttpServletRequest request
 	) {
-		FeedPageResponseDto responseDto = feedService.deleteFeed(id, dto.getPassword());
+		FeedPageResponseDto responseDto = feedService.deleteFeed(getLoginUserId(request), id);
 
 		ApiResponseDto<FeedPageResponseDto> apiResponseDto = ApiResponseDto.<FeedPageResponseDto>builder()
 			.code(HttpStatus.OK.value())
@@ -132,5 +137,14 @@ public class FeedController {
 			.data(responseDto)
 			.build();
 		return new ResponseEntity<>(apiResponseDto, HttpStatus.OK);
+	}
+
+	/**
+	 * 🚀 세션에 저장되어 있는 로그인 유저 아이디 가져오는 메서드
+	 * @param request HttpServletRequest 객체
+	 * @return Long 타입의 로그인 유저 아이디 반환
+	 */
+	private Long getLoginUserId(HttpServletRequest request) {
+		return (Long)request.getAttribute("userId");
 	}
 }
