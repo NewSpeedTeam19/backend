@@ -1,6 +1,8 @@
 package com.newspeed19.user.profile.service;
 
 import com.newspeed19.user.entity.User;
+import com.newspeed19.user.exception.UserErrorCode;
+import com.newspeed19.user.exception.UserException;
 import com.newspeed19.user.profile.dto.UserProfileResponseDto;
 import com.newspeed19.user.profile.dto.UserProfileUpdateRequestDto;
 import com.newspeed19.user.repository.UserRepository;
@@ -41,7 +43,7 @@ public class ProfileServiceImpl implements ProfileService {
 	@Override
 	public UserProfileResponseDto getUserProfile(Long userId) {
 		User user = userRepository.findById(userId)
-			.orElseThrow(() -> new IllegalArgumentException("해당 사용자를 찾을 수 없습니다."));
+			.orElseThrow(() -> UserException.builder().errorCode(UserErrorCode.NOT_FOUND_USER).build());
 
 		return UserProfileResponseDto.builder()
 			.id(user.getId())
@@ -51,4 +53,12 @@ public class ProfileServiceImpl implements ProfileService {
 			.email(null)
 			.build();
 	}
+	@Override
+	public User getUserEntity(Long userId) {
+		return userRepository.findById(userId)
+				.orElseThrow(() -> UserException.builder()
+						.errorCode(UserErrorCode.NOT_FOUND_USER)
+						.build());
+	}
+
 }
