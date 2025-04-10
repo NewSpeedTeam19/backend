@@ -24,7 +24,7 @@ public class JwtProvider {
 	@Value("${jwt.secret}")
 	private String secretKey;
 
-	private final long ACCESS_TOKEN_VALIDITY = 1000L * 60; // 1분
+	private final long ACCESS_TOKEN_VALIDITY = 1000L * 6000; // 1분
 
 	public String createToken(long userId, String userType) {
 		Claims claims = Jwts.claims().setSubject(String.valueOf(userId));
