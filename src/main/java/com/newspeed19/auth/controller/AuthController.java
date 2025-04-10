@@ -6,6 +6,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.CookieValue;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,6 +23,8 @@ import com.newspeed19.auth.service.JwtProvider;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Size;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -34,25 +37,25 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@Validated
 public class AuthController {
 	private final AuthService authService;
 	private final JwtProvider jwtProvider;
 
 	@PostMapping("/signup")
-	public void signup(@RequestBody SignupRequestDto dto) {
+	public void signup(@Valid @RequestBody SignupRequestDto dto) {
 		authService.signup(dto);
 	}
 
 	@PostMapping("/namecheck")
-	public ResponseEntity<String> checkName(@RequestParam String name) {
-		if (authService.checkName(name)) {
-			return ResponseEntity.status(HttpStatus.OK).body("사용 가능한 닉네임입니다.");
-		}
-		throw new RuntimeException("사용 중인 닉네임입니다.");
+	public ResponseEntity<String> checkName(
+		@RequestParam @Size(min = 2, max = 10, message = "이름은 2~10자여야 합니다.") String name) {
+		authService.checkName(name);
+		return ResponseEntity.status(HttpStatus.OK).body("사용 가능한 닉네임입니다.");
 	}
 
 	@PostMapping("/login")
-	public ResponseEntity<?> login(@RequestBody LoginRequestDto dto, HttpServletResponse response) {
+	public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDto dto, HttpServletResponse response) {
 		String[] tokens = authService.login(dto);
 		ResponseCookie cookie = ResponseCookie.from("refreshToken", tokens[1])
 			.httpOnly(true)
