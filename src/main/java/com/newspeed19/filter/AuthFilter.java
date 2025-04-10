@@ -6,7 +6,6 @@ import java.util.Map;
 
 import org.springframework.util.PatternMatchUtils;
 
-import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.newspeed19.auth.repository.JwtBlackList;
 import com.newspeed19.auth.service.JwtProvider;
 
@@ -47,17 +46,15 @@ public class AuthFilter implements Filter {
 		HttpServletResponse response = (HttpServletResponse)servletResponse;
 
 		if (!isWhiteList(requestUri, requestMethod)) {
-			try {
-				String token = jwtProvider.getToken(request.getHeader("Authorization"));
-				if (isBlacklisted(token)) {
-					throw new RuntimeException("사용 중지된 토큰입니다.");
-				}
-				long id = getUserIdFromToken(token);
-				request.setAttribute("userId", id);
-			} catch (JWTVerificationException e) {
-				throw new RuntimeException("실패~");
+			String token = jwtProvider.getToken(request.getHeader("Authorization"));
+			if (isBlacklisted(token)) {
+				throw new RuntimeException("사용 중지된 토큰입니다.");
 			}
+			long id = getUserIdFromToken(token);
+			request.setAttribute("userId", id);
 		}
+		// handler filter를 만들기
+		// response status 변경, response 형태
 		filterChain.doFilter(servletRequest, response);
 	}
 

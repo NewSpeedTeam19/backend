@@ -5,6 +5,8 @@ import org.springframework.stereotype.Service;
 import com.newspeed19.auth.dto.LoginRequestDto;
 import com.newspeed19.auth.dto.SignupRequestDto;
 import com.newspeed19.auth.entity.Token;
+import com.newspeed19.auth.exception.AuthErrorCode;
+import com.newspeed19.auth.exception.AuthException;
 import com.newspeed19.auth.repository.JwtBlackList;
 import com.newspeed19.auth.repository.TokenRepository;
 import com.newspeed19.user.entity.User;
@@ -29,48 +31,52 @@ public class AuthService {
 
 	@Transactional
 	public void signup(SignupRequestDto dto) {
+		if (!dto.getPassword().equals(dto.getPasswordConfirm())) {
+			throw AuthException.builder().errorCode(AuthErrorCode.PASSWORD_MISMATCH).build();
+		}
 		User user = new User(dto.getName(), dto.getEmail(), dto.getPassword());
 		userRepository.save(user);
 	}
 
-	public boolean checkName(String name) {
-		return !userRepository.existsByName(name);
+	public void checkName(String name) {
+		if (userRepository.existsByName(name)) {
+			AuthException.builder().errorCode(AuthErrorCode.DUPLICATED_NAME).build();
+		}
 	}
 
 	@Transactional
 	public String[] login(LoginRequestDto dto) {
-		User user = userRepository.findByEmail(dto.getEmail()).orElseThrow();
+		User user = userRepository.findByEmail(dto.getEmail())
+			.orElseThrow(() -> AuthException.builder().errorCode(AuthErrorCode.NOT_FOUND_USER).build());
 		if (!user.getPassword().equals(dto.getPassword())) {
-			throw new RuntimeException("비번이 틀렸어 로그인 실패!");
+			throw AuthException.builder().errorCode(AuthErrorCode.WRONG_PASSWORD).build();
 		}
 
 		String accessToken = jwtProvider.createToken(user.getId(), "access");
 		String refreshToken = jwtProvider.createToken(user.getId(), "refresh");
-		Token dbtoken = new Token(refreshToken);
-		tokenRepository.save(dbtoken);
+
+		tokenRepository.save(new Token(refreshToken));
 		return new String[] {accessToken, refreshToken};
 	}
 
 	public String reissue(String refresh) {
 		if (!tokenRepository.existsByToken(refresh)) {
-			throw new RuntimeException("Db에 토큰이 없어요~");
+			throw AuthException.builder().errorCode(AuthErrorCode.WRONG_TOKEN).build();
 		}
 
 		long id = Long.parseLong(jwtProvider.getUserId(refresh));
-		String accessToken = jwtProvider.createToken(id, "access");
-
-		return accessToken;
+		return jwtProvider.createToken(id, "access");
 	}
 
 	@Transactional
 	public void logout(String refreshtoken, String accessToken) {
 		String idFromAccess = jwtProvider.getUserId(accessToken);
 		String idFromRefresh = jwtProvider.getUserId(refreshtoken);
-		if (idFromRefresh.equals(idFromAccess)) {
-			JwtBlackList.list.put(accessToken, jwtProvider.getExiration(accessToken));
-			tokenRepository.deleteByToken(refreshtoken);
-		} else {
-			throw new RuntimeException("토큰들이 일치하지 않습니다.");
+		if (!idFromRefresh.equals(idFromAccess)) {
+			throw AuthException.builder().errorCode(AuthErrorCode.TOKEN_MISMATCH).build();
 		}
+
+		JwtBlackList.list.put(accessToken, jwtProvider.getExiration(accessToken));
+		tokenRepository.deleteByToken(refreshtoken);
 	}
 }
