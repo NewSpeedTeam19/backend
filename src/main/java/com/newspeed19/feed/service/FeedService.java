@@ -1,6 +1,7 @@
 package com.newspeed19.feed.service;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -18,8 +19,10 @@ import com.newspeed19.feed.dto.response.FeedDetailResponseDto;
 import com.newspeed19.feed.dto.response.FeedPageResponseDto;
 import com.newspeed19.feed.dto.response.FeedResponseDto;
 import com.newspeed19.feed.entity.Feed;
+import com.newspeed19.feed.entity.FeedLike;
 import com.newspeed19.feed.exception.FeedErrorCode;
 import com.newspeed19.feed.exception.FeedException;
+import com.newspeed19.feed.repository.FeedLikeRepository;
 import com.newspeed19.feed.repository.FeedRepository;
 import com.newspeed19.follow.repository.FollowRepository;
 import com.newspeed19.user.entity.User;
@@ -37,6 +40,7 @@ public class FeedService {
 	private final FeedRepository feedRepository;
 	private final FollowRepository followRepository;
 	private final CommentRepository commentRepository;
+	private final FeedLikeRepository feedLikeRepository;
 	private final CommentLikeRepository commentLikeRepository;
 	private final UserRepository userRepository;
 
@@ -67,6 +71,7 @@ public class FeedService {
 						.id(feed.getId())
 						.contents(feed.getContents())
 						.image(feed.getImage())
+						.likes(feedLikeRepository.countByFeedId(feed.getId()))
 						.commentCount(commentRepository.countByFeedId(feed.getId()))
 						.createdAt(feed.getCreatedAt())
 						.updatedAt(feed.getUpdatedAt())
@@ -80,6 +85,7 @@ public class FeedService {
 						.id(feed.getId())
 						.contents(feed.getContents())
 						.image(feed.getImage())
+						.likes(feedLikeRepository.countByFeedId(feed.getId()))
 						.commentCount(commentRepository.countByFeedId(feed.getId()))
 						.createdAt(feed.getCreatedAt())
 						.updatedAt(feed.getUpdatedAt())
@@ -204,6 +210,7 @@ public class FeedService {
 			.createdAt(feed.getCreatedAt())
 			.updatedAt(feed.getUpdatedAt())
 			.user(myProfile)
+			.likes(feedLikeRepository.countByFeedId(feed.getId()))
 			.commentCount(commentRepository.countByFeedId(feed.getId()))
 			.comments(comments)
 			.build();
@@ -227,5 +234,31 @@ public class FeedService {
 
 		feedRepository.delete(feed);
 		return this.findAllFeed(loginUserId, 0, 10);
+	}
+
+	@Transactional
+	public void toggleLike(Long feedId, Long userId){
+		Feed feed = feedRepository.findById(feedId).orElseThrow(() -> FeedException
+			.builder()
+			.errorCode(FeedErrorCode.FEED_NOT_FOUND)
+			.build());
+		User user = userRepository.getByIdOrThrow(userId);
+
+		if(feed.getUser().getId().equals(userId)){
+			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"본인글에 좋아요 불가능 합니다.");
+		}
+
+		Optional<FeedLike> like = feedLikeRepository.findByUserAndFeed(user,feed);
+
+		if(feedLikeRepository.existsByUserAndFeed(user,feed)){
+			feedLikeRepository.delete(like.get());
+		}else{
+			feedLikeRepository.save(
+				FeedLike.builder()
+					.user(user)
+					.feed(feed)
+					.build()
+			);
+		}
 	}
 }
