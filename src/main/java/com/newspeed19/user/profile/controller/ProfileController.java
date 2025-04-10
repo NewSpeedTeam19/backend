@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.newspeed19.auth.service.JwtProvider;
 import com.newspeed19.user.entity.User;
 import com.newspeed19.user.profile.dto.MessageResponseDto;
 import com.newspeed19.user.profile.dto.UserProfileResponseDto;
@@ -43,7 +45,7 @@ public class ProfileController {
 		@RequestBody @Valid UserProfileUpdateRequestDto req) {
 		Long userId = Long.valueOf((String)request.getAttribute("userId"));
 		User user = userRepository.getByIdOrThrow(userId);
-		profileService.updateMyProfile(user, requestDto);
+		profileService.updateMyProfile(user, req);
 		return ResponseEntity.ok(new MessageResponseDto("프로필이 성공적으로 수정되었습니다."));
 	}
 
