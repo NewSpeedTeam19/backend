@@ -9,7 +9,6 @@ import com.newspeed19.feed.entity.FeedLike;
 import com.newspeed19.user.entity.User;
 
 public interface FeedLikeRepository extends JpaRepository<FeedLike, Long> {
-
 	/**
 	 * [Repo] 유저가 해당 피드 좋아요를 눌렀는지 여부를 반환하는 메서드
 	 * @param user 유저 객체
