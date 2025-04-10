@@ -4,7 +4,6 @@ import org.springframework.stereotype.Service;
 
 import com.newspeed19.auth.dto.LoginRequestDto;
 import com.newspeed19.auth.dto.SignupRequestDto;
-import com.newspeed19.auth.repository.UserRepositorys;
 import com.newspeed19.user.entity.User;
 import com.newspeed19.user.repository.UserRepository;
 
@@ -21,13 +20,11 @@ import lombok.RequiredArgsConstructor;
 @Service
 @RequiredArgsConstructor
 public class AuthService {
-	private final UserRepositorys repository;
 	private final UserRepository userRepository;
 	private final JwtProvider jwtProvider;
 
 	@Transactional
 	public void signup(SignupRequestDto dto) {
-		// Userssss userssss = new Userssss(dto.getName(), dto.getEmail(), dto.getPassword());
 		User user = new User(dto.getName(), dto.getEmail(), dto.getPassword());
 		userRepository.save(user);
 	}

@@ -17,6 +17,7 @@ import com.newspeed19.auth.repository.JwtBlackList;
 import com.newspeed19.auth.service.AuthService;
 import com.newspeed19.auth.service.JwtProvider;
 
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 
 /**
@@ -69,12 +70,9 @@ public class AuthController {
 	}
 
 	@GetMapping("/test")
-	public void test(@RequestHeader("Authorization") String authorization) {
-		String token = jwtProvider.getToken(authorization);
-		System.out.println(token);
-
-		System.out.println();
-		System.out.println("filter 확인용");
+	public void test(HttpServletRequest req) {
+		long userId = (Long)req.getAttribute("userId");
+		System.out.println(userId);
 	}
 }
 
