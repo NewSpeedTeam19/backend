@@ -33,7 +33,7 @@ public class AuthFilter implements Filter {
 	}
 
 	private final Map<String, List> WHITE_LIST = Map.of(
-		"POST", List.of("/api/auth/signup", "/api/auth/namecheck", "/api/auth/login"),
+		"POST", List.of("/api/auth/signup", "/api/auth/namecheck", "/api/auth/login", "/api/auth/reissue"),
 		"GET", List.of("/api/feed", "/api/feed/*", "/api/feed/*/comments", "/api/profile/*")
 	);
 
