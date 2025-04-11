@@ -1,5 +1,7 @@
 package com.newspeed19.user.profile.service;
 
+import com.newspeed19.feed.dto.response.FeedPageResponseDto;
+import com.newspeed19.feed.service.FeedService;
 import com.newspeed19.user.entity.User;
 import com.newspeed19.user.exception.UserErrorCode;
 import com.newspeed19.user.exception.UserException;
@@ -15,17 +17,21 @@ import org.springframework.transaction.annotation.Transactional;
 public class ProfileServiceImpl implements ProfileService {
 
 	private final UserRepository userRepository;
+	private final FeedService feedService;
 
 	// 내 프로필 조회
 	@Override
 	public UserProfileResponseDto getMyProfile(User user) {
+		FeedPageResponseDto userFeeds = feedService.findAllFeedById(user.getId());
+
 		return UserProfileResponseDto.builder()
 			.id(user.getId())
 			.name(user.getName())
 			.introduction(user.getIntroduction())
 			.image(user.getImage())
 			.email(user.getEmail())
-			.feedCount(user.getFeedCount())
+			.feeds(userFeeds)
+			.feedCount(userFeeds.getFeedCount())
 			.followCount(user.getFollowCount())
 			.followingCount(user.getFollowingCount())
 			.build();
@@ -48,13 +54,16 @@ public class ProfileServiceImpl implements ProfileService {
 		User user = userRepository.findById(userId)
 			.orElseThrow(() -> UserException.builder().errorCode(UserErrorCode.NOT_FOUND_USER).build());
 
+		FeedPageResponseDto userFeeds = feedService.findAllFeedById(user.getId());
+
 		return UserProfileResponseDto.builder()
 			.id(user.getId())
 			.name(user.getName())
 			.introduction(user.getIntroduction())
 			.image(user.getImage())
 			.email(null)
-			.feedCount(user.getFeedCount())
+			.feeds(userFeeds)
+			.feedCount(userFeeds.getFeedCount())
 			.followCount(user.getFollowCount())
 			.followingCount(user.getFollowingCount())
 			.build();
