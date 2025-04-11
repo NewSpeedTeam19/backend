@@ -156,6 +156,7 @@ public class FeedService {
 			.id(feed.getId())
 			.contents(feed.getContents())
 			.image(feed.getImage())
+			.comments(List.of())
 			.createdAt(feed.getCreatedAt())
 			.updatedAt(feed.getUpdatedAt())
 			.user(myProfile)
