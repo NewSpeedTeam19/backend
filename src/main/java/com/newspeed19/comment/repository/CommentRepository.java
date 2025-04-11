@@ -16,7 +16,7 @@ import com.newspeed19.feed.entity.Feed;
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 	default Comment findByIdOrElseThrow(Long id) {
 		return findById(id).orElseThrow(()->CommentException.builder()
-			.errorCode(CommentErrorCode.COMMENT_NOT_ALLOW)
+			.errorCode(CommentErrorCode.COMMENT_NOT_FOUN)
 			.build());
 	}
 
