@@ -41,6 +41,9 @@ public class User {
 	@Column(nullable = false)
 	private String password;
 
+	@Column(name = "feed_count")
+	private Long feedCount = 0L;
+
 	@Column(name = "follow_count")
 	private Long followCount = 0L;
 
@@ -80,6 +83,10 @@ public class User {
 			this.introduction = introduction;
 		if (image != null)
 			this.image = image;
+	}
+
+	public void incrementFeedCount() {
+		this.feedCount++;
 	}
 
 	public void incrementFollwer() {
