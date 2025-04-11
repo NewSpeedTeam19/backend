@@ -27,7 +27,7 @@ public class JwtProvider {
 	@Value("${jwt.secret}")
 	private String secretKey;
 
-	private final long ACCESS_TOKEN_VALIDITY = 1000L * 60 * 5; // 1분
+	private final long ACCESS_TOKEN_VALIDITY = 1000L * 6000 * 5; // 1분
 	private final long REFRESH_TOKEN_VALIDITY = 1000L * 60 * 10; // 10분
 
 	public String createToken(long userId, String userType) {

@@ -116,6 +116,9 @@ public class FollowServiceImpl implements FollowService {
 
 		follow.setStatus(FollowStatus.ACCEPTED);
 
+		follower.incrementFollowing();
+		following.incrementFollwer();
+
 		followRepository.save(follow);
 
 		return FollowResponseDto.builder()
