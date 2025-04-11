@@ -96,18 +96,13 @@ public class FeedService {
 	}
 
 	/**
-	 * TODO: 추후, 기본 페이징 및 기간별 설정 변경해야 함
+	 * TODO: 추후, 페이징 설정 해야 함
 	 * [Controller] 사용자의 모든 피드를 조회하는 메서드
 	 * @param userId 유저 Id
 	 * @return 페이징된 피드응답 객체를 반환
 	 */
 	@Transactional(readOnly = true)
 	public FeedPageResponseDto findAllFeedById(Long userId) {
-		// 기간별 검색 (기본값: 최근 1개월)
-		LocalDateTime[] dates = getDefaultDate(null, null);
-		LocalDateTime startDate = dates[0]; // 시작 날짜
-		LocalDateTime endDate = dates[1]; // 마지막 날짜
-
 		// 페이징 객체 생성 (수정일자 내림차순, 좋아요 많은 순)
 		PageRequest pageable = PageRequest.of(
 			0,
@@ -115,8 +110,8 @@ public class FeedService {
 			Sort.by(Sort.Order.desc("updatedAt"), Sort.Order.desc("likes"))
 		);
 
-		// 팔로우가 없을 경우, 전체 피드 목록 조회
-		Page<Feed> feedPage = feedRepository.findAllByCreatedAtBetween(startDate, endDate, pageable);
+		// 전체 피드 목록 조회
+		Page<Feed> feedPage = feedRepository.findAll(pageable);
 
 		// 응답 객체 생성
 		Page<FeedResponseDto> feedPageResponseDto = feedPage.map(feed ->
