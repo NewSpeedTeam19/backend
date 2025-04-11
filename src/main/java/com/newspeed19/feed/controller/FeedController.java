@@ -34,6 +34,9 @@ public class FeedController {
 
 	/**
 	 * [Controller] 전체 피드를 조회하는 메서드
+	 * @param startDate 기간검색 시, 시작날짜 (기본 값: 1달 전 00:00:00)
+	 * @param endDate 기간 검색 시, 마지막 날짜 (기본 값: 오늘 23:59:59)
+	 * @param request HttpServletRequest 객체
 	 * @param page 페이지 번호
 	 * @param size 페이지 사이즈
 	 * @return 페이징 피드정보가 포함된 응답객체를 반환
@@ -48,7 +51,8 @@ public class FeedController {
 		@RequestParam(defaultValue = "10") int size,
 		HttpServletRequest request
 	) {
-		FeedPageResponseDto responseDto = feedService.findAllFeed(startDate, endDate, getLoginUserId(request), page, size);
+		FeedPageResponseDto responseDto = feedService
+			.findAllFeed(startDate, endDate, getLoginUserId(request), page, size);
 
 		ApiResponseDto<FeedPageResponseDto> apiResponseDto = ApiResponseDto.<FeedPageResponseDto>builder()
 			.code(HttpStatus.OK.value())
@@ -82,6 +86,7 @@ public class FeedController {
 	/**
 	 * [Controller] 피드를 생성하는 메서드
 	 * @param dto 사용자 요청 DTO
+	 * @param request HttpServletRequest 객체
 	 * @return 생성된 피드 정보가 포함된 응답객체를 반환
 	 */
 	@PostMapping("/create")
@@ -104,6 +109,7 @@ public class FeedController {
 	 * [Controller] 피드를 수정하는 메서드
 	 * @param id 피드 id
 	 * @param dto 사용자 요청 DTO
+	 * @param request HttpServletRequest 객체
 	 * @return 수정된 피드 정보가 포함된 응답객체를 반환
 	 */
 	@PatchMapping("/{id}")
@@ -127,6 +133,7 @@ public class FeedController {
 	 * [Controller] 단일 피드를 삭제하는 메서드
 	 * @param id 피드 id
 	 * @param dto 사용자 요청 DTO
+	 * @param request HttpServletRequest 객체
 	 * @return 업데이트된 페이징 피드 정보가 포함된 응답객체를 반환
 	 */
 	@DeleteMapping("/{id}")
@@ -146,14 +153,25 @@ public class FeedController {
 		return new ResponseEntity<>(apiResponseDto, HttpStatus.OK);
 	}
 
+	/**
+	 * [Controller] 피드 좋아요 기능을 처리하는 메서드
+	 * @param request HttpServletRequest 객체
+	 * @param id 피드 id
+	 * @return
+	 */
 	@PostMapping("/{id}/like")
-	public ResponseEntity<String> toggleLike(
-		HttpServletRequest req,
+	public ResponseEntity<ApiResponseDto<Void>> toggleLike(
+		HttpServletRequest request,
 		@PathVariable Long id
 	) {
-		long userId = (Long)req.getAttribute("userId");
-		feedService.toggleLike(id, userId);
-		return ResponseEntity.ok("요청 완료");
+		feedService.toggleLike(id, getLoginUserId(request));
+
+		ApiResponseDto<Void> apiResponseDto = ApiResponseDto.<Void>builder()
+			.code(HttpStatus.OK.value())
+			.message("좋아요 요청을 성공적으로 처리하였습니다.")
+			.status(HttpStatus.OK.getReasonPhrase())
+			.build();
+		return new ResponseEntity<>(apiResponseDto, HttpStatus.OK);
 	}
 
 	/**
