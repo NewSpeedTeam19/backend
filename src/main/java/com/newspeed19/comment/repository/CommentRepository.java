@@ -16,7 +16,7 @@ import com.newspeed19.feed.entity.Feed;
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 	default Comment findByIdOrElseThrow(Long id) {
 		return findById(id).orElseThrow(()->CommentException.builder()
-			.errorCode(CommentErrorCode.COMMENT_NOT_ALLOW)
+			.errorCode(CommentErrorCode.COMMENT_NOT_FOUND)
 			.build());
 	}
 
@@ -25,7 +25,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 	default List<Comment> findByFeedIdOrElseThrow(Feed feed) {
 		List<Comment> comments = findAllByFeedId(feed.getId());
 		if (comments.isEmpty()) {
-			throw new CommentException(CommentErrorCode.COMMENT_NOT_FOUN);
+			throw new CommentException(CommentErrorCode.COMMENT_NOT_FOUND);
 		}
 		return comments;
 	}
@@ -36,7 +36,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 		Page<Comment> pageComment = findAllByFeedId(feed.getId(), pageable);
 
 		if (pageComment.isEmpty()) {
-			throw new CommentException(CommentErrorCode.COMMENT_NOT_FOUN);
+			throw new CommentException(CommentErrorCode.COMMENT_NOT_FOUND);
 		}
 
 		return pageComment;
