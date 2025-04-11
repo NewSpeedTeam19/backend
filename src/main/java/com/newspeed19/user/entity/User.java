@@ -89,6 +89,10 @@ public class User {
 		this.feedCount++;
 	}
 
+	public void decrementFeedCount() {
+		this.feedCount--;
+	}
+
 	public void incrementFollwer() {
 		this.followCount++;
 	}
