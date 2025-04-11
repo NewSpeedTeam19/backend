@@ -188,17 +188,19 @@ public class FeedService {
 	@Transactional
 	public FeedDetailResponseDto updateFeed(FeedRequestDto dto, Long loginUserId, Long id) {
 		Feed feed = feedRepository.findById(id)
-			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 게시글입니다."));
+			.orElseThrow(() -> FeedException.builder()
+				.errorCode(FeedErrorCode.FEED_NOT_FOUND)
+				.build());
 
 		// 로그인 유저가 작성한 피드가 아닐 경우 예외 처리
 		if (!loginUserId.equals(feed.getUser().getId())) {
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "수정 권한이 없습니다.");
+			throw FeedException.builder()
+				.errorCode(FeedErrorCode.FEED_NOT_FOUND)
+				.build();
 		}
 
-		// 로그인 유저
+		// // 유저 DTO
 		User user = userRepository.getByIdOrThrow(loginUserId);
-
-		// 유저 DTO
 		UserProfileResponseDto myProfile = profileService.getMyProfile(user);
 
 		// 피드에 달린 모든 댓글 가져오기
@@ -231,11 +233,15 @@ public class FeedService {
 	@Transactional
 	public FeedPageResponseDto deleteFeed(Long loginUserId, Long feedId) {
 		Feed feed = feedRepository.findById(feedId)
-			.orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 게시글입니다."));
+			.orElseThrow(() -> FeedException.builder()
+				.errorCode(FeedErrorCode.FEED_NOT_FOUND)
+				.build());
 
 		// 로그인 유저가 작성한 피드가 아닐 경우 예외 처리
 		if (!loginUserId.equals(feed.getUser().getId())) {
-			throw new ResponseStatusException(HttpStatus.FORBIDDEN, "수정 권한이 없습니다.");
+			throw FeedException.builder()
+				.errorCode(FeedErrorCode.FEED_NOT_FOUND)
+				.build();
 		}
 
 		feedRepository.delete(feed);
