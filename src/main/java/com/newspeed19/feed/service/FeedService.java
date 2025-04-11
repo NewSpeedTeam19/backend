@@ -191,6 +191,7 @@ public class FeedService {
 				.user(user)
 				.build()
 		);
+		user.incrementFeedCount();
 
 		return FeedDetailResponseDto.builder()
 			.id(feed.getId())
@@ -258,6 +259,7 @@ public class FeedService {
 			.orElseThrow(() -> FeedException.builder()
 				.errorCode(FeedErrorCode.FEED_NOT_FOUND)
 				.build());
+		User loginUser = userRepository.getByIdOrThrow(loginUserId);
 
 		// 로그인 유저가 작성한 피드가 아닐 경우 예외 처리
 		if (!loginUserId.equals(feed.getUser().getId())) {
@@ -267,6 +269,7 @@ public class FeedService {
 		}
 
 		feedRepository.delete(feed);
+		loginUser.decrementFeedCount();
 		return this.findAllFeed(LocalDate.now(), LocalDate.now().minusMonths(1), loginUserId,  0, 10);
 	}
 
