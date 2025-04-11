@@ -244,7 +244,7 @@ public class FeedService {
 		User user = userRepository.getByIdOrThrow(loginUserId);
 
 		// 본인 글에 좋아요를 눌렀을 경우
-		if (!loginUserId.equals(feed.getUser().getId())) {
+		if (loginUserId.equals(feed.getUser().getId())) {
 			throw FeedException.builder().errorCode(FeedErrorCode.FEED_MY_FEED_NO_LIKES).build();
 		}
 
