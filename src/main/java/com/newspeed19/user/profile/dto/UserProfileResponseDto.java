@@ -11,4 +11,7 @@ public class UserProfileResponseDto {
 	private final String introduction;
 	private final String image;
 	private final String email;
+	private final Long feedCount;
+	private final Long followCount;
+	private final Long followingCount;
 }

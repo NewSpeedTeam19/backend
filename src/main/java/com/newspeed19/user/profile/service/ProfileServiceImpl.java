@@ -25,6 +25,9 @@ public class ProfileServiceImpl implements ProfileService {
 			.introduction(user.getIntroduction())
 			.image(user.getImage())
 			.email(user.getEmail())
+			.feedCount(user.getFeedCount())
+			.followCount(user.getFollowCount())
+			.followingCount(user.getFollowingCount())
 			.build();
 	}
 
@@ -51,6 +54,9 @@ public class ProfileServiceImpl implements ProfileService {
 			.introduction(user.getIntroduction())
 			.image(user.getImage())
 			.email(null)
+			.feedCount(user.getFeedCount())
+			.followCount(user.getFollowCount())
+			.followingCount(user.getFollowingCount())
 			.build();
 	}
 	@Override
