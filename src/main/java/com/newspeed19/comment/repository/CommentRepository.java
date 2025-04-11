@@ -18,7 +18,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 		return findById(id).orElseThrow(()->CommentException.builder()
 			.errorCode(CommentErrorCode.COMMENT_NOT_ALLOW)
 			.build());
-		// return findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 댓글입니다."));
 	}
 
 	List<Comment> findAllByFeedId(Long feedId);
@@ -27,7 +26,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 		List<Comment> comments = findAllByFeedId(feed.getId());
 		if (comments.isEmpty()) {
 			throw new CommentException(CommentErrorCode.COMMENT_NOT_FOUN);
-			// throw new ResponseStatusException(HttpStatus.NOT_FOUND, "댓글이 없습니다.");
 		}
 		return comments;
 	}
@@ -39,7 +37,6 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 
 		if (pageComment.isEmpty()) {
 			throw new CommentException(CommentErrorCode.COMMENT_NOT_FOUN);
-			// throw new ResponseStatusException(HttpStatus.NOT_FOUND, "댓글이 없습니다.");
 		}
 
 		return pageComment;

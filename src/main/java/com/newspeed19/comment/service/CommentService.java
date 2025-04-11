@@ -77,7 +77,6 @@ public class CommentService {
 		Comment comment = commentRepository.findByIdOrElseThrow(id);
 		if (!comment.getUser().getId().equals(userId)) {
 			throw new CommentException(CommentErrorCode.COMMENT_NOT_ALLOW);
-			// throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "작성자만 접근 가능합니다.");
 		}
 		comment.update(requestDto.getContent());
 	}
@@ -87,7 +86,6 @@ public class CommentService {
 		Comment comment = commentRepository.findByIdOrElseThrow(id);
 		if (!comment.getUser().getId().equals(userId)) {
 			throw new CommentException(CommentErrorCode.COMMENT_NOT_ALLOW);
-			// throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "작성자만 접근 가능합니다.");
 		}
 		commentRepository.delete(comment);
 	}
@@ -122,7 +120,6 @@ public class CommentService {
 		// 본인 댓글 좋아요 방지
 		if(comment.getUser().getId().equals(userId)){
 			throw new CommentException(CommentErrorCode.COMMENT_CANT_SELF);
-			// throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"본인 댓글에 좋아요 불가능 합니다.");
 		}
 
 		//유저와 코멘트로 like 정보 찾기
