@@ -80,7 +80,7 @@ public class FeedService {
 				.id(feed.getId())
 				.contents(feed.getContents())
 				.image(feed.getImage())
-				.likes(feedLikeRepository.countByFeedId(feed.getId()))
+				.likes(feed.getLikes())
 				.commentCount(commentRepository.countByFeedId(feed.getId()))
 				.createdAt(feed.getCreatedAt())
 				.updatedAt(feed.getUpdatedAt())
@@ -92,45 +92,6 @@ public class FeedService {
 			.pages(feedPageResponseDto)
 			.feeds(feeds)
 			.feedCount(feedRepository.count())
-			.build();
-	}
-
-	/**
-	 * TODO: 추후, 페이징 설정 해야 함
-	 * [Controller] 사용자의 모든 피드를 조회하는 메서드
-	 * @param userId 유저 Id
-	 * @return 페이징된 피드응답 객체를 반환
-	 */
-	@Transactional(readOnly = true)
-	public FeedPageResponseDto findAllFeedById(Long userId) {
-		// 페이징 객체 생성 (수정일자 내림차순, 좋아요 많은 순)
-		PageRequest pageable = PageRequest.of(
-			0,
-			10,
-			Sort.by(Sort.Order.desc("updatedAt"), Sort.Order.desc("likes"))
-		);
-
-		// 전체 피드 목록 조회
-		Page<Feed> feedPage = feedRepository.findAll(pageable);
-
-		// 응답 객체 생성
-		Page<FeedResponseDto> feedPageResponseDto = feedPage.map(feed ->
-			FeedResponseDto.builder()
-				.id(feed.getId())
-				.contents(feed.getContents())
-				.image(feed.getImage())
-				.likes(feedLikeRepository.countByFeedId(feed.getId()))
-				.commentCount(commentRepository.countByFeedId(feed.getId()))
-				.createdAt(feed.getCreatedAt())
-				.updatedAt(feed.getUpdatedAt())
-				.build()
-		);
-		List<FeedResponseDto> feeds = feedPageResponseDto.getContent();
-
-		return FeedPageResponseDto.builder()
-			.pages(feedPageResponseDto)
-			.feeds(feeds)
-			.feedCount(feedRepository.countByUserId(userId))
 			.build();
 	}
 
@@ -161,7 +122,7 @@ public class FeedService {
 			.contents(feed.getContents())
 			.image(feed.getImage())
 			.likes(feedLikeRepository.countByFeedId(feed.getId()))
-			.commentCount(commentRepository.countByFeedId(feed.getId()))
+			.commentCount(feed.getLikes())
 			.createdAt(feed.getCreatedAt())
 			.updatedAt(feed.getUpdatedAt())
 			.user(myProfile)
@@ -241,7 +202,7 @@ public class FeedService {
 			.createdAt(feed.getCreatedAt())
 			.updatedAt(feed.getUpdatedAt())
 			.user(myProfile)
-			.likes(feedLikeRepository.countByFeedId(feed.getId()))
+			.likes(feed.getLikes())
 			.commentCount(commentRepository.countByFeedId(feed.getId()))
 			.comments(comments)
 			.build();
