@@ -37,6 +37,4 @@ public interface FeedRepository extends JpaRepository<Feed, Long> {
 	 * @return 작성한 피드 개수를 반환
 	 */
 	Long countByUserId(Long userId);
-
-	Long user(User user);
 }
