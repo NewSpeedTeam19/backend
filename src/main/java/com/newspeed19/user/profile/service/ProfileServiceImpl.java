@@ -129,7 +129,7 @@ public class ProfileServiceImpl implements ProfileService {
 	@Transactional
 	public void updatePassword(Long userId, UserPasswordUpdateRequestDto request) {
 		try {
-			User user = getUserEntity(userId); // ✅ 수정된 부분
+			User user = getUserEntity(userId);
 
 			String current = request.getCurrentPassword();
 			String newPw = request.getNewPassword();
