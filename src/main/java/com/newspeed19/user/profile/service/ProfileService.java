@@ -14,4 +14,8 @@ public interface ProfileService {
 
 	// 다른 사람 프로필 조회
 	UserProfileResponseDto getUserProfile(Long userId);
+
+	// Id로 유저 조회
+	User getUserEntity(Long userId);
+
 }

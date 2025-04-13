@@ -1,7 +1,14 @@
 package com.newspeed19.user.entity;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 /**
  * User Entity
@@ -33,6 +40,9 @@ public class User {
 
 	@Column(nullable = false)
 	private String password;
+
+	@Column(name = "feed_count")
+	private Long feedCount = 0L;
 
 	@Column(name = "follow_count")
 	private Long followCount = 0L;
@@ -66,11 +76,28 @@ public class User {
 		this.isDeleted = false;
 	}
 
-
 	public void updateProfile(String name, String introduction, String image) {
-		if (name != null) this.name = name;
-		if (introduction != null) this.introduction = introduction;
-		if (image != null) this.image = image;
+		if (name != null)
+			this.name = name;
+		if (introduction != null)
+			this.introduction = introduction;
+		if (image != null)
+			this.image = image;
 	}
 
+	public void incrementFeedCount() {
+		this.feedCount++;
+	}
+
+	public void decrementFeedCount() {
+		this.feedCount--;
+	}
+
+	public void incrementFollwer() {
+		this.followCount++;
+	}
+
+	public void incrementFollowing() {
+		this.followingCount++;
+	}
 }

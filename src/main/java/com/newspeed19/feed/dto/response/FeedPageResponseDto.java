@@ -18,4 +18,5 @@ import lombok.Getter;
 public class FeedPageResponseDto {
 	private final List<FeedResponseDto> feeds;
 	private final Page<FeedResponseDto> pages;
+	private final Long feedCount;
 }

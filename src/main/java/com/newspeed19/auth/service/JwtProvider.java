@@ -7,6 +7,9 @@ import java.util.Date;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import com.newspeed19.auth.exception.AuthErrorCode;
+import com.newspeed19.auth.exception.AuthException;
+
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -24,7 +27,7 @@ public class JwtProvider {
 	@Value("${jwt.secret}")
 	private String secretKey;
 
-	private final long ACCESS_TOKEN_VALIDITY = 1000L * 60 * 5; // 1분
+	private final long ACCESS_TOKEN_VALIDITY = 1000L * 6000 * 5; // 1분
 	private final long REFRESH_TOKEN_VALIDITY = 1000L * 60 * 10; // 10분
 
 	public String createToken(long userId, String userType) {
@@ -66,6 +69,9 @@ public class JwtProvider {
 	}
 
 	public String getToken(String authHeader) {
+		if (authHeader == null) {
+			throw AuthException.builder().errorCode(AuthErrorCode.ACCESS_IS_EMPTY).build();
+		}
 		return authHeader.substring(7);
 	}
 

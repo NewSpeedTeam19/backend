@@ -9,11 +9,15 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.server.ResponseStatusException;
 
 import com.newspeed19.comment.entity.Comment;
+import com.newspeed19.comment.exception.CommentErrorCode;
+import com.newspeed19.comment.exception.CommentException;
 import com.newspeed19.feed.entity.Feed;
 
 public interface CommentRepository extends JpaRepository<Comment, Long> {
 	default Comment findByIdOrElseThrow(Long id) {
-		return findById(id).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "존재하지 않는 댓글입니다."));
+		return findById(id).orElseThrow(()->CommentException.builder()
+			.errorCode(CommentErrorCode.COMMENT_NOT_FOUND)
+			.build());
 	}
 
 	List<Comment> findAllByFeedId(Long feedId);
@@ -21,7 +25,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 	default List<Comment> findByFeedIdOrElseThrow(Feed feed) {
 		List<Comment> comments = findAllByFeedId(feed.getId());
 		if (comments.isEmpty()) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "댓글이 없습니다.");
+			throw new CommentException(CommentErrorCode.COMMENT_NOT_FOUND);
 		}
 		return comments;
 	}
@@ -32,7 +36,7 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
 		Page<Comment> pageComment = findAllByFeedId(feed.getId(), pageable);
 
 		if (pageComment.isEmpty()) {
-			throw new ResponseStatusException(HttpStatus.NOT_FOUND, "댓글이 없습니다.");
+			throw new CommentException(CommentErrorCode.COMMENT_NOT_FOUND);
 		}
 
 		return pageComment;

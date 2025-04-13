@@ -17,6 +17,8 @@ import com.newspeed19.comment.dto.response.CommentPageResponseDto;
 import com.newspeed19.comment.dto.response.CommentResponseDto;
 import com.newspeed19.comment.entity.Comment;
 import com.newspeed19.comment.entity.CommentLike;
+import com.newspeed19.comment.exception.CommentErrorCode;
+import com.newspeed19.comment.exception.CommentException;
 import com.newspeed19.comment.repository.CommentLikeRepository;
 import com.newspeed19.comment.repository.CommentRepository;
 import com.newspeed19.feed.entity.Feed;
@@ -74,7 +76,7 @@ public class CommentService {
 	public void update(Long id, Long userId, @Valid CommentRequestDto requestDto) {
 		Comment comment = commentRepository.findByIdOrElseThrow(id);
 		if (!comment.getUser().getId().equals(userId)) {
-			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "작성자만 접근 가능합니다.");
+			throw new CommentException(CommentErrorCode.COMMENT_NOT_ALLOW);
 		}
 		comment.update(requestDto.getContent());
 	}
@@ -83,7 +85,7 @@ public class CommentService {
 	public void delete(Long id, Long userId) {
 		Comment comment = commentRepository.findByIdOrElseThrow(id);
 		if (!comment.getUser().getId().equals(userId)) {
-			throw new ResponseStatusException(HttpStatus.UNAUTHORIZED, "작성자만 접근 가능합니다.");
+			throw new CommentException(CommentErrorCode.COMMENT_NOT_ALLOW);
 		}
 		commentRepository.delete(comment);
 	}
@@ -115,10 +117,9 @@ public class CommentService {
 		Comment comment = commentRepository.findByIdOrElseThrow(commentId);
 		User user = userRepository.getByIdOrThrow(userId);
 
-
 		// 본인 댓글 좋아요 방지
 		if(comment.getUser().getId().equals(userId)){
-			throw new ResponseStatusException(HttpStatus.BAD_REQUEST,"본인 댓글에 좋아요 불가능 합니다.");
+			throw new CommentException(CommentErrorCode.COMMENT_CANT_SELF);
 		}
 
 		//유저와 코멘트로 like 정보 찾기
