@@ -1,5 +1,6 @@
 package com.newspeed19.auth.service;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.newspeed19.auth.dto.LoginRequestDto;
@@ -28,15 +29,22 @@ public class AuthService {
 	private final UserRepository userRepository;
 	private final JwtProvider jwtProvider;
 	private final TokenRepository tokenRepository;
+	private final BCryptPasswordEncoder passwordEncoder;
+
 
 	@Transactional
 	public void signup(SignupRequestDto dto) {
 		if (!dto.getPassword().equals(dto.getPasswordConfirm())) {
 			throw AuthException.builder().errorCode(AuthErrorCode.PASSWORD_MISMATCH).build();
 		}
-		User user = new User(dto.getName(), dto.getEmail(), dto.getPassword());
+
+		// 비밀번호 암호화
+		String encodedPw = passwordEncoder.encode(dto.getPassword());
+
+		User user = new User(dto.getName(), dto.getEmail(), encodedPw);
 		userRepository.save(user);
 	}
+
 
 	public void checkName(String name) {
 		if (userRepository.existsByName(name)) {
@@ -48,7 +56,7 @@ public class AuthService {
 	public String[] login(LoginRequestDto dto) {
 		User user = userRepository.findByEmail(dto.getEmail())
 			.orElseThrow(() -> AuthException.builder().errorCode(AuthErrorCode.NOT_FOUND_USER).build());
-		if (!user.getPassword().equals(dto.getPassword())) {
+		if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
 			throw AuthException.builder().errorCode(AuthErrorCode.WRONG_PASSWORD).build();
 		}
 

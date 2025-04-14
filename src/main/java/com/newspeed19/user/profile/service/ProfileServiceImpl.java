@@ -10,6 +10,7 @@ import com.newspeed19.feed.repository.FeedRepository;
 import com.newspeed19.user.entity.User;
 import com.newspeed19.user.exception.UserErrorCode;
 import com.newspeed19.user.exception.UserException;
+import com.newspeed19.user.profile.dto.UserPasswordUpdateRequestDto;
 import com.newspeed19.user.profile.dto.UserProfileResponseDto;
 import com.newspeed19.user.profile.dto.UserProfileUpdateRequestDto;
 import com.newspeed19.user.repository.UserRepository;
@@ -18,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +30,8 @@ public class ProfileServiceImpl implements ProfileService {
 	private final UserRepository userRepository;
 	private final FeedRepository feedRepository;
 	private final CommentRepository commentRepository;
+	private final BCryptPasswordEncoder passwordEncoder;
+
 
 	// 내 프로필 조회
 	@Override
@@ -118,4 +122,39 @@ public class ProfileServiceImpl implements ProfileService {
 			.feedCount(feedRepository.countByUserId(userId))
 			.build();
 	}
+
+
+	// 비밀번호 변경
+	@Override
+	@Transactional
+	public void updatePassword(Long userId, UserPasswordUpdateRequestDto request) {
+		try {
+			User user = getUserEntity(userId);
+
+			String current = request.getCurrentPassword();
+			String newPw = request.getNewPassword();
+
+			if (!passwordEncoder.matches(current, user.getPassword())) {
+				throw new IllegalArgumentException("현재 비밀번호가 일치하지 않습니다.");
+			}
+
+			if (newPw.length() < 8 || !newPw.matches(".*[A-Za-z].*") || !newPw.matches(".*\\d.*")) {
+				throw new IllegalArgumentException("비밀번호는 8자 이상이며, 문자와 숫자를 포함해야 합니다.");
+			}
+
+			if (passwordEncoder.matches(newPw, user.getPassword())) {
+				throw new IllegalArgumentException("현재 비밀번호와 동일한 비밀번호로는 변경할 수 없습니다.");
+			}
+
+			String encodedPw = passwordEncoder.encode(newPw);
+			user.setPassword(encodedPw);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw e;
+		}
+	}
+
+
+
 }

@@ -1,6 +1,7 @@
 package com.newspeed19.user.profile.service;
 
 import com.newspeed19.user.entity.User;
+import com.newspeed19.user.profile.dto.UserPasswordUpdateRequestDto;
 import com.newspeed19.user.profile.dto.UserProfileResponseDto;
 import com.newspeed19.user.profile.dto.UserProfileUpdateRequestDto;
 
@@ -17,5 +18,9 @@ public interface ProfileService {
 
 	// Id로 유저 조회
 	User getUserEntity(Long userId);
+
+	// 비밀번호 변경
+	void updatePassword(Long userId, UserPasswordUpdateRequestDto request);
+
 
 }
