@@ -1,0 +1,88 @@
+package com.newspeed19.auth.service;
+
+import java.nio.charset.StandardCharsets;
+import java.security.Key;
+import java.util.Date;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+
+import com.newspeed19.auth.exception.AuthErrorCode;
+import com.newspeed19.auth.exception.AuthException;
+
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.SignatureAlgorithm;
+import io.jsonwebtoken.security.Keys;
+
+/**
+ * @packageName    : com.newspeed19.auth.service
+ * @fileName       : JwtProvider
+ * @author         : yong
+ * @date           : 4/9/25
+ * @description    :
+ */
+@Component
+public class JwtProvider {
+	@Value("${jwt.secret}")
+	private String secretKey;
+
+	private final long ACCESS_TOKEN_VALIDITY = 1000L * 6000 * 5; // 1분
+	private final long REFRESH_TOKEN_VALIDITY = 1000L * 60 * 10; // 10분
+
+	public String createToken(long userId, String userType) {
+		Claims claims = Jwts.claims().setSubject(String.valueOf(userId));
+		Date now = new Date();
+		Date expiration;
+
+		if (userType.equals("access")) {
+			expiration = new Date(now.getTime() + ACCESS_TOKEN_VALIDITY);
+		} else {
+			expiration = new Date(now.getTime() + REFRESH_TOKEN_VALIDITY);
+		}
+		Key key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
+
+		return Jwts.builder()
+			.setClaims(claims)
+			.setIssuedAt(now)
+			.setExpiration(expiration)
+			.signWith(key, SignatureAlgorithm.HS512)
+			.compact();
+	}
+
+	public String getUserId(String token) {
+		Key key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
+		return Jwts.parserBuilder()
+			.setSigningKey(key)
+			.build()
+			.parseClaimsJws(token)
+			.getBody()
+			.getSubject();
+	}
+
+	public void validateToken(String token) {
+		Key key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
+		Claims claims = Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token).getBody();
+		if (claims.isEmpty()) {
+			throw new RuntimeException("validate실패");
+		}
+	}
+
+	public String getToken(String authHeader) {
+		if (authHeader == null) {
+			throw AuthException.builder().errorCode(AuthErrorCode.ACCESS_IS_EMPTY).build();
+		}
+		return authHeader.substring(7);
+	}
+
+	public long getExiration(String token) {
+		Key key = Keys.hmacShaKeyFor(secretKey.getBytes(StandardCharsets.UTF_8));
+		Claims claims = Jwts.parserBuilder()
+			.setSigningKey(key)
+			.build()
+			.parseClaimsJws(token)
+			.getBody();
+		Date expiration = claims.getExpiration();
+		return expiration.getTime();
+	}
+}

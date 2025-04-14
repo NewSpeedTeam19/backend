@@ -1,0 +1,88 @@
+package com.newspeed19.feed.entity;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import com.newspeed19.common.entity.BaseEntity;
+import com.newspeed19.user.entity.User;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+
+@Entity
+@Table(name = "feed")
+@Getter
+@NoArgsConstructor
+public class Feed extends BaseEntity {
+
+	@Id
+	@GeneratedValue(strategy = GenerationType.IDENTITY)
+	private Long id;
+
+	@Column(nullable = false, columnDefinition = "longtext")
+	private String contents;
+
+	@Column(nullable = false, columnDefinition = "BIGINT DEFAULT 0")
+	private Long likes = 0L;
+
+	@Column(nullable = false, columnDefinition = "text")
+	private String image;
+
+	@ManyToOne(fetch = FetchType.LAZY)
+	@JoinColumn(nullable = false, name = "user_id")
+	@Setter
+	private User user;
+
+	@OneToMany(mappedBy = "feed", cascade = CascadeType.REMOVE, orphanRemoval = true)
+	private List<FeedLike> feedLikes = new ArrayList<>();
+
+	/**
+	 * ✅ Builder 생성자
+	 * @param contents 피드 내용
+	 * @param image 피드 이미지 url
+	 * @param user 피드 생성한 유저
+	 */
+	@Builder
+	public Feed(String contents, String image, User user) {
+		this.contents = contents;
+		this.image = image;
+		this.user = user;
+	}
+
+	/**
+	 * 🚀 피드 업데이트 메서드
+	 * @param contents 피드 내용
+	 * @param image 피드 이미지 url
+	 */
+	public void updateFeed(String contents, String image) {
+		this.contents = contents;
+		this.image = image;
+	}
+
+	/**
+	 * 🚀 피드 좋아요 증가 메서드
+	 */
+	public void increaseLikes() {
+		this.likes += 1;
+	}
+
+	/**
+	 * 🚀 피드 좋아요 감소 메서드
+	 */
+	public void decreaseLikes() {
+		if (this.likes > 0) this.likes -= 1;
+	}
+}
