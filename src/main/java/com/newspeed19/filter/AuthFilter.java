@@ -46,12 +46,19 @@ public class AuthFilter implements Filter {
 		HttpServletResponse response = (HttpServletResponse)servletResponse;
 
 		if (!isWhiteList(requestUri, requestMethod)) {
-			String token = jwtProvider.getToken(request.getHeader("Authorization"));
-			if (isBlacklisted(token)) {
-				throw new RuntimeException("사용 중지된 토큰입니다.");
+			try {
+				String token = jwtProvider.getToken(request.getHeader("Authorization"));
+				if (isBlacklisted(token)) {
+					throw new RuntimeException("사용 중지된 토큰입니다.");
+				}
+				long id = getUserIdFromToken(token);
+				request.setAttribute("userId", id);
+			} catch (Exception e) {
+				System.out.println("토큰 예외 발생: " + e.getMessage());
+				response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+				response.setContentType("application/json");
 			}
-			long id = getUserIdFromToken(token);
-			request.setAttribute("userId", id);
+
 		}
 		// handler filter를 만들기
 		// response status 변경, response 형태
